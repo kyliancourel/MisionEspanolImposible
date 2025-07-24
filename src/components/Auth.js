@@ -5,11 +5,11 @@ import { auth, db } from '../firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-import LevelSelector from './components/LevelSelector';
-import MissionList from './components/MissionList';
-import Auth from './components/Auth';
-import PrivacyPolicy from './components/PrivacyPolicy';
-import DeleteData from './components/DeleteData';
+import LevelSelector from './LevelSelector';
+import MissionList from './MissionList';
+import Auth from './Auth';
+import PrivacyPolicy from './PrivacyPolicy';
+import DeleteData from './DeleteData';
 
 function App() {
   const [level, setLevel] = useState(null);
