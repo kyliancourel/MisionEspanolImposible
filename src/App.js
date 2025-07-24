@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-// Remplacer BrowserRouter par HashRouter ici
-import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom'; // <-- ici HashRouter
 
 import { auth, db } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -34,19 +33,15 @@ function App() {
         setUnlockedMissionIndex(0);
       }
     });
-
     return () => unsubscribe();
   }, []);
 
   const unlockNextMission = async () => {
     if (!user || !level) return;
-
     const missionsCount = MissionList.getMissionCount(level);
     if (unlockedMissionIndex + 1 >= missionsCount) return;
-
     const newIndex = unlockedMissionIndex + 1;
     setUnlockedMissionIndex(newIndex);
-
     const userDocRef = doc(db, 'users', user.uid);
     await setDoc(userDocRef, { unlockedMissionIndex: newIndex }, { merge: true });
   };
@@ -60,16 +55,13 @@ function App() {
   const Home = () => (
     <div className="text-center" style={{ padding: '20px' }}>
       <h1>🎯 ¡Misión: Español Imposible!</h1>
-
       {user ? (
         <>
           <p>Bienvenue, <strong>{user.displayName || user.email}</strong> 👋</p>
           <button onClick={handleLogout} style={{ marginBottom: '20px' }}>
             Se déconnecter
           </button>
-
           <LevelSelector onSelectLevel={setLevel} />
-
           {level ? (
             <>
               <p>Tu as choisi le niveau : <strong>{level}</strong></p>
