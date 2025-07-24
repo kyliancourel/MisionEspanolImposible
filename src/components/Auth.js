@@ -1,82 +1,123 @@
-import React, { useState } from 'react';
-import {
-  auth,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  GoogleAuthProvider,
-  signInWithPopup,
-} from '../firebase';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
-function Auth() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isRegister, setIsRegister] = useState(false);
-  const [error, setError] = useState(null);
+import { auth, db } from './firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-  const handleEmailPasswordAuth = async () => {
-    setError(null);
-    try {
-      if (isRegister) {
-        await createUserWithEmailAndPassword(auth, email, password);
+import LevelSelector from './components/LevelSelector';
+import MissionList from './components/MissionList';
+import Auth from './components/Auth';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import DeleteData from './components/DeleteData';
+
+function App() {
+  const [level, setLevel] = useState(null);
+  const [user, setUser] = useState(null);
+  const [unlockedMissionIndex, setUnlockedMissionIndex] = useState(0);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          const data = userDocSnap.data();
+          setUnlockedMissionIndex(data.unlockedMissionIndex || 0);
+        } else {
+          await setDoc(userDocRef, { unlockedMissionIndex: 0 });
+          setUnlockedMissionIndex(0);
+        }
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        setUnlockedMissionIndex(0);
       }
-    } catch (err) {
-      setError(err.message);
-    }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const unlockNextMission = async () => {
+    if (!user || !level) return;
+
+    const missionsCount = MissionList.getMissionCount(level);
+    if (unlockedMissionIndex + 1 >= missionsCount) return;
+
+    const newIndex = unlockedMissionIndex + 1;
+    setUnlockedMissionIndex(newIndex);
+
+    const userDocRef = doc(db, 'users', user.uid);
+    await setDoc(userDocRef, { unlockedMissionIndex: newIndex }, { merge: true });
   };
 
-  const handleProviderLogin = async (provider) => {
-    setError(null);
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (err) {
-      setError(err.message);
-    }
+  const handleLogout = () => {
+    signOut(auth);
+    setLevel(null);
+    setUnlockedMissionIndex(0);
   };
+
+  const Home = () => (
+    <div className="text-center" style={{ padding: '20px' }}>
+      <h1>🎯 ¡Misión: Español Imposible!</h1>
+
+      {user ? (
+        <>
+          <p>Bienvenue, <strong>{user.displayName || user.email}</strong> 👋</p>
+          <button onClick={handleLogout} style={{ marginBottom: '20px' }}>
+            Se déconnecter
+          </button>
+
+          <LevelSelector onSelectLevel={setLevel} />
+
+          {level ? (
+            <>
+              <p>Tu as choisi le niveau : <strong>{level}</strong></p>
+              <MissionList
+                level={level}
+                isLoggedIn={true}
+                unlockedMissionIndex={unlockedMissionIndex}
+                onUnlockNext={unlockNextMission}
+              />
+            </>
+          ) : (
+            <p>Veuillez sélectionner un niveau.</p>
+          )}
+        </>
+      ) : (
+        <>
+          <Auth />
+          <LevelSelector onSelectLevel={setLevel} />
+          {level ? (
+            <>
+              <p>Tu as choisi le niveau : <strong>{level}</strong></p>
+              <MissionList level={level} isLoggedIn={false} />
+              <p style={{ marginTop: '20px', color: 'gray' }}>
+                Connecte-toi pour débloquer toutes les missions !
+              </p>
+            </>
+          ) : (
+            <p>Veuillez sélectionner un niveau.</p>
+          )}
+        </>
+      )}
+    </div>
+  );
 
   return (
-    <div style={{ maxWidth: 320, margin: 'auto', textAlign: 'center' }}>
-      <h3>{isRegister ? 'Inscription' : 'Connexion'}</h3>
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={e => setEmail(e.target.value)}
-        style={{ marginBottom: 8, width: '100%' }}
-      />
-      <input
-        type="password"
-        placeholder="Mot de passe"
-        value={password}
-        onChange={e => setPassword(e.target.value)}
-        style={{ marginBottom: 8, width: '100%' }}
-      />
-      <button onClick={handleEmailPasswordAuth} style={{ width: '100%', marginBottom: 12 }}>
-        {isRegister ? "S'inscrire" : 'Se connecter'}
-      </button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <p>
-        {isRegister ? 'Déjà un compte ?' : 'Pas encore de compte ?'}{' '}
-        <button
-          onClick={() => setIsRegister(!isRegister)}
-          style={{ cursor: 'pointer', color: 'blue', background: 'none', border: 'none', padding: 0 }}
-        >
-          {isRegister ? 'Se connecter' : "S'inscrire"}
-        </button>
-      </p>
+    <Router>
+      <nav style={{ padding: '10px', borderBottom: '1px solid #ccc', marginBottom: '20px' }}>
+        <Link to="/" style={{ marginRight: '10px' }}>Accueil</Link>
+        <Link to="/privacy-policy" style={{ marginRight: '10px' }}>Politique de confidentialité</Link>
+        <Link to="/delete-data">Suppression des données</Link>
+      </nav>
 
-      <hr style={{ margin: '20px 0' }} />
-
-      <button
-        onClick={() => handleProviderLogin(new GoogleAuthProvider())}
-        style={{ width: '100%', marginBottom: 8 }}
-      >
-        Se connecter avec Google
-      </button>
-    </div>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/delete-data" element={<DeleteData />} />
+      </Routes>
+    </Router>
   );
 }
 
-export default Auth;
+export default App;
