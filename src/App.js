@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+// Remplacer BrowserRouter par HashRouter ici
+import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
 import { auth, db } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -56,7 +57,6 @@ function App() {
     setUnlockedMissionIndex(0);
   };
 
-  // Composant principal de la page d'accueil avec ta logique existante
   const Home = () => (
     <div className="text-center" style={{ padding: '20px' }}>
       <h1>🎯 ¡Misión: Español Imposible!</h1>
