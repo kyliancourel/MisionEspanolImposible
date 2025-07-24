@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom'; // <-- ici HashRouter
+import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
 import { auth, db } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -10,6 +10,7 @@ import MissionList from './components/MissionList';
 import Auth from './components/Auth';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import DeleteData from './components/DeleteData';
+import UserProfile from './components/UserProfile';
 
 function App() {
   const [level, setLevel] = useState(null);
@@ -25,12 +26,15 @@ function App() {
         if (userDocSnap.exists()) {
           const data = userDocSnap.data();
           setUnlockedMissionIndex(data.unlockedMissionIndex || 0);
+          setLevel(data.level || null);
         } else {
           await setDoc(userDocRef, { unlockedMissionIndex: 0 });
           setUnlockedMissionIndex(0);
+          setLevel(null);
         }
       } else {
         setUnlockedMissionIndex(0);
+        setLevel(null);
       }
     });
     return () => unsubscribe();
@@ -65,11 +69,11 @@ function App() {
           {level ? (
             <>
               <p>Tu as choisi le niveau : <strong>{level}</strong></p>
-              <MissionList 
-                level={level} 
-                isLoggedIn={true} 
-                unlockedMissionIndex={unlockedMissionIndex} 
-                onUnlockNext={unlockNextMission} 
+              <MissionList
+                level={level}
+                isLoggedIn={true}
+                unlockedMissionIndex={unlockedMissionIndex}
+                onUnlockNext={unlockNextMission}
               />
             </>
           ) : (
@@ -100,6 +104,11 @@ function App() {
     <Router>
       <nav style={{ padding: '10px', borderBottom: '1px solid #ccc', marginBottom: '20px' }}>
         <Link to="/" style={{ marginRight: '10px' }}>Accueil</Link>
+        {user && (
+          <Link to="/profile" style={{ marginRight: '10px' }}>
+            Mon Profil
+          </Link>
+        )}
         <Link to="/privacy-policy" style={{ marginRight: '10px' }}>Politique de confidentialité</Link>
         <Link to="/delete-data">Suppression des données</Link>
       </nav>
@@ -108,6 +117,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/delete-data" element={<DeleteData />} />
+        {/* Accès profil protégé : renvoie à Home si pas connecté */}
+        <Route path="/profile" element={user ? <UserProfile /> : <Home />} />
       </Routes>
     </Router>
   );
