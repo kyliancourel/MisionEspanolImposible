@@ -1,0 +1,13 @@
+[
+    {
+      "question": "¿Cómo se dice 'bonjour' en español?",
+      "options": ["Hola", "Merci", "Hello", "Ciao"],
+      "answer": "Hola"
+    },
+    {
+      "question": "¿Qué significa 'gracias'?",
+      "options": ["S'il vous plaît", "Merci", "Bonjour", "Au revoir"],
+      "answer": "Merci"
+    }
+  ]
+  
