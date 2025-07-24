@@ -1,7 +1,27 @@
 import React from 'react';
 import Mission from './Mission';
 
-const missionsByLevel = {
+const activityTypes = [
+  "Compréhension orale",
+  "Compréhension écrite",
+  "Expression orale",
+  "Expression écrite"
+];
+
+const generateLessons = (missionTitle) => {
+  const lessons = [];
+
+  for (let i = 1; i <= 6; i++) {
+    activityTypes.forEach(activity => {
+      lessons.push(`${missionTitle} - Leçon ${i} : ${activity}`);
+    });
+  }
+
+  lessons.push(`${missionTitle} - Évaluation de la séquence`);
+  return lessons;
+};
+
+const rawMissionsByLevel = {
   "Débutant": [
     "Portrait, autoportrait",
     "Le quotidien : lieux, rythmes, saisons",
@@ -34,7 +54,7 @@ const missionsByLevel = {
     "Art et pouvoir",
     "Innovations scientifiques et responsabilité",
     "L'être humain et la nature",
-    "L'espace andin, la colonne vertébralede l'Amérique du Sud",
+    "L'espace andin, la colonne vertébrale de l'Amérique du Sud",
     "Espace privé et espace public",
     "Territoire et mémoire",
     "Fictions et réalités",
@@ -53,7 +73,15 @@ const missionsByLevel = {
   ]
 };
 
-// Fonction utilitaire pour obtenir nombre de missions (utile pour App.js)
+// Génère toutes les missions détaillées
+const missionsByLevel = {};
+Object.keys(rawMissionsByLevel).forEach(level => {
+  missionsByLevel[level] = [];
+  rawMissionsByLevel[level].forEach(missionTitle => {
+    missionsByLevel[level].push(...generateLessons(missionTitle));
+  });
+});
+
 MissionList.getMissionCount = function(level) {
   return (missionsByLevel[level] || []).length;
 };
@@ -62,9 +90,7 @@ function MissionList({ level, isLoggedIn, unlockedMissionIndex = 0, onUnlockNext
   const missions = missionsByLevel[level] || [];
 
   const handleStartMission = (index, mission) => {
-    alert(`Tu as lancé la mission : ${mission}`);
-
-    // Débloquer la mission suivante si c’est la dernière débloquée et qu'il en reste
+    alert(`Tu as lancé : ${mission}`);
     if (isLoggedIn && index === unlockedMissionIndex && unlockedMissionIndex < missions.length - 1) {
       onUnlockNext();
     }

@@ -1,6 +1,16 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-function Mission({ title, onStart, disabled = false }) {
+function Mission({ title, onStart, disabled = false, level }) {
+  const navigate = useNavigate();
+
+  const handleStart = () => {
+    if (disabled) return;
+    onStart(); // déblocage
+    const missionKey = encodeURIComponent(title); // pour l'URL
+    navigate(`/lesson/${encodeURIComponent(level)}/${missionKey}`);
+  };
+
   return (
     <div
       style={{
@@ -19,7 +29,7 @@ function Mission({ title, onStart, disabled = false }) {
     >
       <h3>{title}</h3>
       <button
-        onClick={onStart}
+        onClick={handleStart}
         disabled={disabled}
         style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
       >

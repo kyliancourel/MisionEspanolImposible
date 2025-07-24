@@ -11,6 +11,7 @@ import Auth from './components/Auth';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import DeleteData from './components/DeleteData';
 import UserProfile from './components/UserProfile';
+import LessonPage from './pages/LessonPage';
 
 function App() {
   const [level, setLevel] = useState(null);
@@ -117,8 +118,9 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/delete-data" element={<DeleteData />} />
-        {/* Accès profil protégé : renvoie à Home si pas connecté */}
         <Route path="/profile" element={user ? <UserProfile /> : <Home />} />
+        {/* Route corrigée avec level et missionKey */}
+        <Route path="/lesson/:level/:missionKey/:lessonKey" element={<LessonPage />} />
       </Routes>
     </Router>
   );
