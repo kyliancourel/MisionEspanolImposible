@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/MisionEspanolImposible/static/css/main.e6c13ad2.css",
+    "main.js": "/MisionEspanolImposible/static/js/main.c26d4cba.js",
+    "static/js/453.41738ecd.chunk.js": "/MisionEspanolImposible/static/js/453.41738ecd.chunk.js",
+    "index.html": "/MisionEspanolImposible/index.html",
+    "main.e6c13ad2.css.map": "/MisionEspanolImposible/static/css/main.e6c13ad2.css.map",
+    "main.c26d4cba.js.map": "/MisionEspanolImposible/static/js/main.c26d4cba.js.map",
+    "453.41738ecd.chunk.js.map": "/MisionEspanolImposible/static/js/453.41738ecd.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.c26d4cba.js"
+  ]
+}
