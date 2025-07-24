@@ -2,7 +2,7 @@
   "name": "juego-espanol",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://TON-USERNAME.github.io/TON-REPO-NAME",
+  "homepage": "https://kyliancourel.github.io/MisionEspanolImposible",
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
