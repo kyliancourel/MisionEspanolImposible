@@ -35,7 +35,7 @@ function PrivacyPolicy() {
       </ul>
 
       <h2>Contact</h2>
-      <p>Pour toute question concernant vos données personnelles, contactez-nous à : <a href="mailto:support@example.com">support@example.com</a>.</p>
+      <p>Pour toute question concernant vos données personnelles, contactez-nous à : <a href="mailto:misionespanolimposible@gmail.com">support@example.com</a>.</p>
     </div>
   );
 }

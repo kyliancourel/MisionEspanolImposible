@@ -20,7 +20,7 @@ function DeleteData() {
       </p>
 
       <p>
-        Si vous rencontrez des difficultés ou souhaitez faire une demande manuelle, contactez-nous à : <a href="mailto:support@example.com">support@example.com</a>.
+        Si vous rencontrez des difficultés ou souhaitez faire une demande manuelle, contactez-nous à : <a href="mailto:misionespanolimposible@gmail.com">support@example.com</a>.
       </p>
     </div>
   );

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+
 import { auth, db } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -6,13 +8,14 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import LevelSelector from './components/LevelSelector';
 import MissionList from './components/MissionList';
 import Auth from './components/Auth';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import DeleteData from './components/DeleteData';
 
 function App() {
   const [level, setLevel] = useState(null);
   const [user, setUser] = useState(null);
-  const [unlockedMissionIndex, setUnlockedMissionIndex] = useState(0); // index mission débloquée
+  const [unlockedMissionIndex, setUnlockedMissionIndex] = useState(0);
 
-  // Observer état connexion et charger données Firestore
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
@@ -23,7 +26,6 @@ function App() {
           const data = userDocSnap.data();
           setUnlockedMissionIndex(data.unlockedMissionIndex || 0);
         } else {
-          // créer doc utilisateur par défaut
           await setDoc(userDocRef, { unlockedMissionIndex: 0 });
           setUnlockedMissionIndex(0);
         }
@@ -35,13 +37,11 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // Fonction pour débloquer mission suivante
   const unlockNextMission = async () => {
     if (!user || !level) return;
 
-    // Récupérer nombre total de missions du niveau
     const missionsCount = MissionList.getMissionCount(level);
-    if (unlockedMissionIndex + 1 >= missionsCount) return; // déjà tout débloqué
+    if (unlockedMissionIndex + 1 >= missionsCount) return;
 
     const newIndex = unlockedMissionIndex + 1;
     setUnlockedMissionIndex(newIndex);
@@ -56,7 +56,8 @@ function App() {
     setUnlockedMissionIndex(0);
   };
 
-  return (
+  // Composant principal de la page d'accueil avec ta logique existante
+  const Home = () => (
     <div className="text-center" style={{ padding: '20px' }}>
       <h1>🎯 ¡Misión: Español Imposible!</h1>
 
@@ -101,6 +102,22 @@ function App() {
         </>
       )}
     </div>
+  );
+
+  return (
+    <Router>
+      <nav style={{ padding: '10px', borderBottom: '1px solid #ccc', marginBottom: '20px' }}>
+        <Link to="/" style={{ marginRight: '10px' }}>Accueil</Link>
+        <Link to="/privacy-policy" style={{ marginRight: '10px' }}>Politique de confidentialité</Link>
+        <Link to="/delete-data">Suppression des données</Link>
+      </nav>
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/delete-data" element={<DeleteData />} />
+      </Routes>
+    </Router>
   );
 }
 
