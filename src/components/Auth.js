@@ -5,8 +5,6 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   GoogleAuthProvider,
-  FacebookAuthProvider,
-  OAuthProvider,
   signInWithPopup,
 } from '../firebase';
 
@@ -61,7 +59,10 @@ function Auth() {
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <p>
         {isRegister ? 'Déjà un compte ?' : 'Pas encore de compte ?'}{' '}
-        <button onClick={() => setIsRegister(!isRegister)} style={{ cursor: 'pointer', color: 'blue', background: 'none', border: 'none', padding: 0 }}>
+        <button
+          onClick={() => setIsRegister(!isRegister)}
+          style={{ cursor: 'pointer', color: 'blue', background: 'none', border: 'none', padding: 0 }}
+        >
           {isRegister ? 'Se connecter' : "S'inscrire"}
         </button>
       </p>
@@ -73,20 +74,6 @@ function Auth() {
         style={{ width: '100%', marginBottom: 8 }}
       >
         Se connecter avec Google
-      </button>
-
-      <button
-        onClick={() => handleProviderLogin(new FacebookAuthProvider())}
-        style={{ width: '100%', marginBottom: 8 }}
-      >
-        Se connecter avec Facebook
-      </button>
-
-      <button
-        onClick={() => handleProviderLogin(new OAuthProvider('apple.com'))}
-        style={{ width: '100%' }}
-      >
-        Se connecter avec Apple
       </button>
     </div>
   );
