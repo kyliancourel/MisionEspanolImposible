@@ -7,17 +7,29 @@ function LessonPage() {
   const { level, missionKey, lessonKey } = useParams();
   const navigate = useNavigate();
 
-  // Récupérer toutes les leçons de cette mission
-  const lessons = Object.keys(supports?.[level]?.[missionKey] || []);
-
-  // Trouver l’index initial basé sur lessonKey, sinon 0 par défaut
-  const initialIndex = lessonKey ? lessons.indexOf(lessonKey) : 0;
-  const [currentLessonIndex, setCurrentLessonIndex] = useState(
-    initialIndex >= 0 ? initialIndex : 0
-  );
+  const [lessons, setLessons] = useState([]);
+  const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
 
   useEffect(() => {
-    // Si l’index change, on met à jour l’URL pour refléter la leçon actuelle
+    // Validation basique
+    if (!level || !missionKey || !supports?.[level]?.[missionKey]) {
+      return;
+    }
+
+    const lessonList = Object.keys(supports[level][missionKey]);
+    setLessons(lessonList);
+
+    const index = lessonList.indexOf(lessonKey);
+    if (index >= 0) {
+      setCurrentLessonIndex(index);
+    } else if (lessonList.length > 0) {
+      // Redirige vers la première leçon si l’URL contient un lessonKey invalide
+      navigate(`/lesson/${level}/${missionKey}/${lessonList[0]}`, { replace: true });
+    }
+  }, [level, missionKey, lessonKey, navigate]);
+
+  useEffect(() => {
+    // Change l’URL si l’index a changé et la leçon actuelle ne correspond pas à l’URL
     if (lessons[currentLessonIndex] && lessons[currentLessonIndex] !== lessonKey) {
       navigate(`/lesson/${level}/${missionKey}/${lessons[currentLessonIndex]}`, { replace: true });
     }
@@ -35,8 +47,8 @@ function LessonPage() {
     }
   };
 
-  if (!supports?.[level]?.[missionKey]) {
-    return <p>❌ Contenu introuvable pour cette mission.</p>;
+  if (!level || !missionKey || lessons.length === 0) {
+    return <p>❌ Contenu introuvable pour cette mission ou cette leçon.</p>;
   }
 
   const currentLessonKey = lessons[currentLessonIndex];

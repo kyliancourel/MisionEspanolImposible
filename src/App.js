@@ -119,7 +119,6 @@ function App() {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/delete-data" element={<DeleteData />} />
         <Route path="/profile" element={user ? <UserProfile /> : <Home />} />
-        {/* Route corrigée avec level et missionKey */}
         <Route path="/lesson/:level/:missionKey/:lessonKey" element={<LessonPage />} />
       </Routes>
     </Router>

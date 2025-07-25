@@ -110,7 +110,6 @@ function LessonActivities({ level, missionKey, lessonKey }) {
             </blockquote>
           )}
 
-          {/* EE : champ libre + correction */}
           {key === 'EE' && (
             <>
               <textarea
