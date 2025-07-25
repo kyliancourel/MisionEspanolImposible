@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 
 import { auth, db } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -102,7 +102,7 @@ function App() {
   );
 
   return (
-    <Router>
+    <Router basename="/MisionEspanolImposible">
       <nav style={{ padding: '10px', borderBottom: '1px solid #ccc', marginBottom: '20px' }}>
         <Link to="/" style={{ marginRight: '10px' }}>Accueil</Link>
         {user && (
@@ -120,6 +120,8 @@ function App() {
         <Route path="/delete-data" element={<DeleteData />} />
         <Route path="/profile" element={user ? <UserProfile /> : <Home />} />
         <Route path="/lesson/:level/:missionKey/:lessonKey" element={<LessonPage />} />
+        {/* Fallback: redirige toute route non définie vers l’accueil */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

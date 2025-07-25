@@ -8,29 +8,33 @@ function LessonPage() {
   const navigate = useNavigate();
 
   const [lessons, setLessons] = useState([]);
-  const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
+  const [currentLessonIndex, setCurrentLessonIndex] = useState(null);
 
   useEffect(() => {
-    // Validation basique
     if (!level || !missionKey || !supports?.[level]?.[missionKey]) {
       return;
     }
 
-    const lessonList = Object.keys(supports[level][missionKey]);
-    setLessons(lessonList);
+    const availableLessons = Object.keys(supports[level][missionKey]);
+    setLessons(availableLessons);
 
-    const index = lessonList.indexOf(lessonKey);
+    const index = availableLessons.indexOf(lessonKey);
     if (index >= 0) {
       setCurrentLessonIndex(index);
-    } else if (lessonList.length > 0) {
-      // Redirige vers la première leçon si l’URL contient un lessonKey invalide
-      navigate(`/lesson/${level}/${missionKey}/${lessonList[0]}`, { replace: true });
+    } else {
+      // Redirige vers la première leçon si lessonKey invalide
+      if (availableLessons.length > 0) {
+        navigate(`/lesson/${level}/${missionKey}/${availableLessons[0]}`, { replace: true });
+      }
     }
   }, [level, missionKey, lessonKey, navigate]);
 
   useEffect(() => {
-    // Change l’URL si l’index a changé et la leçon actuelle ne correspond pas à l’URL
-    if (lessons[currentLessonIndex] && lessons[currentLessonIndex] !== lessonKey) {
+    if (
+      currentLessonIndex !== null &&
+      lessons.length > 0 &&
+      lessons[currentLessonIndex] !== lessonKey
+    ) {
       navigate(`/lesson/${level}/${missionKey}/${lessons[currentLessonIndex]}`, { replace: true });
     }
   }, [currentLessonIndex, lessons, level, missionKey, lessonKey, navigate]);
@@ -47,8 +51,8 @@ function LessonPage() {
     }
   };
 
-  if (!level || !missionKey || lessons.length === 0) {
-    return <p>❌ Contenu introuvable pour cette mission ou cette leçon.</p>;
+  if (!level || !missionKey || lessons.length === 0 || currentLessonIndex === null) {
+    return <p>❌ Leçon introuvable.</p>;
   }
 
   const currentLessonKey = lessons[currentLessonIndex];
