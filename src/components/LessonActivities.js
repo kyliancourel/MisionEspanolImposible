@@ -6,7 +6,6 @@ import supports from '../data/supports.json';
 const activityLabels = {
   CO: 'Compréhension Orale',
   CE: 'Compréhension Écrite',
-  EO: 'Expression Orale',
   EE: 'Expression Écrite',
 };
 
@@ -15,7 +14,8 @@ function LessonActivities({ level, missionKey, lessonKey }) {
   const [progression, setProgression] = useState({});
   const [error, setError] = useState(null);
 
-  const activityKeys = ['CO', 'CE', 'EO', 'EE'];
+  const activityKeys = ['CO', 'CE', 'EE'];
+  const lessonSupport = supports?.[level]?.[missionKey]?.[lessonKey];
 
   useEffect(() => {
     if (!user) return;
@@ -64,8 +64,6 @@ function LessonActivities({ level, missionKey, lessonKey }) {
     }
   };
 
-  const lessonSupport = supports?.[level]?.[missionKey]?.[lessonKey];
-
   if (!lessonSupport) {
     return <p>⚠️ Aucun contenu disponible pour cette leçon.</p>;
   }
@@ -92,6 +90,12 @@ function LessonActivities({ level, missionKey, lessonKey }) {
             </audio>
           )}
 
+          {lessonSupport[key]?.consigne && (
+            <p style={{ fontWeight: 'bold', marginBottom: 6 }}>
+              {lessonSupport[key].consigne}
+            </p>
+          )}
+
           {lessonSupport[key]?.texte && (
             <blockquote
               style={{
@@ -104,6 +108,34 @@ function LessonActivities({ level, missionKey, lessonKey }) {
             >
               {lessonSupport[key].texte}
             </blockquote>
+          )}
+
+          {/* EE : champ libre + correction */}
+          {key === 'EE' && (
+            <>
+              <textarea
+                rows={5}
+                placeholder="Écris ta production ici..."
+                style={{ width: '100%', marginBottom: 10 }}
+              />
+              {lessonSupport[key]?.correction && (
+                <details style={{ marginTop: 10 }}>
+                  <summary style={{ cursor: 'pointer', color: 'blue' }}>
+                    Afficher la correction
+                  </summary>
+                  <blockquote
+                    style={{
+                      background: '#f0f0f0',
+                      padding: 10,
+                      borderLeft: '3px solid green',
+                      marginTop: 10,
+                    }}
+                  >
+                    {lessonSupport[key].correction}
+                  </blockquote>
+                </details>
+              )}
+            </>
           )}
 
           <label style={{ display: 'flex', alignItems: 'center' }}>
