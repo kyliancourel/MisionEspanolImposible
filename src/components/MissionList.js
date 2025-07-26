@@ -4,7 +4,6 @@ import Mission from './Mission';
 const activityTypes = [
   "Compréhension orale",
   "Compréhension écrite",
-  "Expression orale",
   "Expression écrite"
 ];
 

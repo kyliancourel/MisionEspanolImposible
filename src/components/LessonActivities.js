@@ -9,6 +9,12 @@ const activityLabels = {
   EE: 'Expression Écrite',
 };
 
+const activityMap = {
+  CO: 'compréhension orale',
+  CE: 'compréhension écrite',
+  EE: 'expression écrite',
+};
+
 function LessonActivities({ level, missionKey, lessonKey }) {
   const user = auth.currentUser;
   const [progression, setProgression] = useState({});
@@ -64,90 +70,95 @@ function LessonActivities({ level, missionKey, lessonKey }) {
     }
   };
 
-  if (!lessonSupport) {
+  if (!lessonSupport || Object.keys(lessonSupport).length === 0) {
     return <p>⚠️ Aucun contenu disponible pour cette leçon.</p>;
   }
 
   return (
     <div style={{ maxWidth: 700, margin: 'auto', padding: 20 }}>
-      {activityKeys.map((key) => (
-        <div
-          key={key}
-          style={{
-            marginBottom: 25,
-            border: '1px solid #ccc',
-            borderRadius: 10,
-            padding: 15,
-            backgroundColor: progression[key] ? '#e6ffed' : '#fff',
-          }}
-        >
-          <h3 style={{ marginBottom: 10 }}>{activityLabels[key]}</h3>
+      {activityKeys.map((key) => {
+        const content = lessonSupport[activityMap[key]];
+        if (!content) return null;
 
-          {lessonSupport[key]?.audio && (
-            <audio controls style={{ marginBottom: 10 }}>
-              <source src={lessonSupport[key].audio} type="audio/mpeg" />
-              Votre navigateur ne supporte pas la lecture audio.
-            </audio>
-          )}
+        return (
+          <div
+            key={key}
+            style={{
+              marginBottom: 25,
+              border: '1px solid #ccc',
+              borderRadius: 10,
+              padding: 15,
+              backgroundColor: progression[key] ? '#e6ffed' : '#fff',
+            }}
+          >
+            <h3 style={{ marginBottom: 10 }}>{activityLabels[key]}</h3>
 
-          {lessonSupport[key]?.consigne && (
-            <p style={{ fontWeight: 'bold', marginBottom: 6 }}>
-              {lessonSupport[key].consigne}
-            </p>
-          )}
+            {content.audio && (
+              <audio controls style={{ marginBottom: 10 }}>
+                <source src={content.audio} type="audio/mpeg" />
+                Votre navigateur ne supporte pas la lecture audio.
+              </audio>
+            )}
 
-          {lessonSupport[key]?.texte && (
-            <blockquote
-              style={{
-                background: '#f9f9f9',
-                padding: '10px',
-                borderLeft: '4px solid #ccc',
-                fontStyle: 'italic',
-                marginBottom: 10,
-              }}
-            >
-              {lessonSupport[key].texte}
-            </blockquote>
-          )}
+            {content.consigne && (
+              <p style={{ fontWeight: 'bold', marginBottom: 6 }}>
+                {content.consigne}
+              </p>
+            )}
 
-          {key === 'EE' && (
-            <>
-              <textarea
-                rows={5}
-                placeholder="Écris ta production ici..."
-                style={{ width: '100%', marginBottom: 10 }}
+            {content.texte && (
+              <blockquote
+                style={{
+                  background: '#f9f9f9',
+                  padding: '10px',
+                  borderLeft: '4px solid #ccc',
+                  fontStyle: 'italic',
+                  marginBottom: 10,
+                }}
+              >
+                {content.texte}
+              </blockquote>
+            )}
+
+            {key === 'EE' && (
+              <>
+                <textarea
+                  rows={5}
+                  placeholder="Écris ta production ici..."
+                  style={{ width: '100%', marginBottom: 10 }}
+                />
+                {content.correction && (
+                  <details style={{ marginTop: 10 }}>
+                    <summary style={{ cursor: 'pointer', color: 'blue' }}>
+                      Afficher la correction
+                    </summary>
+                    <blockquote
+                      style={{
+                        background: '#f0f0f0',
+                        padding: 10,
+                        borderLeft: '3px solid green',
+                        marginTop: 10,
+                      }}
+                    >
+                      {content.correction}
+                    </blockquote>
+                  </details>
+                )}
+              </>
+            )}
+
+            <label style={{ display: 'flex', alignItems: 'center' }}>
+              <input
+                type="checkbox"
+                checked={!!progression[key]}
+                onChange={() => handleToggle(key)}
+                style={{ marginRight: 8 }}
               />
-              {lessonSupport[key]?.correction && (
-                <details style={{ marginTop: 10 }}>
-                  <summary style={{ cursor: 'pointer', color: 'blue' }}>
-                    Afficher la correction
-                  </summary>
-                  <blockquote
-                    style={{
-                      background: '#f0f0f0',
-                      padding: 10,
-                      borderLeft: '3px solid green',
-                      marginTop: 10,
-                    }}
-                  >
-                    {lessonSupport[key].correction}
-                  </blockquote>
-                </details>
-              )}
-            </>
-          )}
-
-          <label style={{ display: 'flex', alignItems: 'center' }}>
-            <input
-              type="checkbox"
-              checked={!!progression[key]}
-              onChange={() => handleToggle(key)}
-              style={{ marginRight: 8 }}
-            />
-            Marquer comme terminé
-          </label>
-        </div>
-      ))}
+              Marquer comme terminé
+            </label>
+          </div>
+        );
+      })}
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
