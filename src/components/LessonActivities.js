@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { auth, db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import supports from '../data/supports.json';
 
 const activityLabels = {
   CO: 'Compréhension Orale',
@@ -15,7 +14,7 @@ const activityMap = {
   EE: 'expression écrite',
 };
 
-function LessonActivities({ level, missionKey, lessonKey }) {
+function LessonActivities({ level, missionKey, lessonKey, supports }) {
   const user = auth.currentUser;
   const [progression, setProgression] = useState({});
   const [error, setError] = useState(null);

@@ -1,19 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import LessonActivities from '../components/LessonActivities';
-import supports from '../data/supports.json';
 
 function LessonPage() {
   const { level, missionKey, lessonKey } = useParams();
   const navigate = useNavigate();
 
+  const [supports, setSupports] = useState(null);
   const [lessons, setLessons] = useState([]);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  // Charger supports.json au montage
   useEffect(() => {
-    if (!level || !missionKey || !supports?.[level]?.[missionKey]) {
-      return;
-    }
+    fetch('/supports.json')
+      .then((res) => {
+        if (!res.ok) throw new Error('Erreur lors du chargement du fichier supports.json');
+        return res.json();
+      })
+      .then((data) => {
+        setSupports(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
+
+  // Met à jour la liste des leçons et l'index courant quand supports ou params changent
+  useEffect(() => {
+    if (!supports || !level || !missionKey || !supports[level]?.[missionKey]) return;
 
     const availableLessons = Object.keys(supports[level][missionKey]);
     setLessons(availableLessons);
@@ -21,14 +38,13 @@ function LessonPage() {
     const index = availableLessons.indexOf(lessonKey);
     if (index >= 0) {
       setCurrentLessonIndex(index);
-    } else {
+    } else if (availableLessons.length > 0) {
       // Redirige vers la première leçon si lessonKey invalide
-      if (availableLessons.length > 0) {
-        navigate(`/lesson/${level}/${missionKey}/${availableLessons[0]}`, { replace: true });
-      }
+      navigate(`/lesson/${level}/${missionKey}/${availableLessons[0]}`, { replace: true });
     }
-  }, [level, missionKey, lessonKey, navigate]);
+  }, [supports, level, missionKey, lessonKey, navigate]);
 
+  // Synchronise l'URL quand currentLessonIndex change
   useEffect(() => {
     if (
       currentLessonIndex !== null &&
@@ -51,7 +67,11 @@ function LessonPage() {
     }
   };
 
-  if (!level || !missionKey || lessons.length === 0 || currentLessonIndex === null) {
+  if (loading) {
+    return <p>Chargement du contenu...</p>;
+  }
+
+  if (!supports || !level || !missionKey || lessons.length === 0 || currentLessonIndex === null) {
     return <p>❌ Leçon introuvable.</p>;
   }
 
@@ -66,6 +86,7 @@ function LessonPage() {
         level={level}
         missionKey={missionKey}
         lessonKey={currentLessonKey}
+        supports={supports} // passe supports aux enfants si besoin
       />
 
       <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'space-between' }}>
