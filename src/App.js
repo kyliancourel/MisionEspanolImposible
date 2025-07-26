@@ -18,21 +18,6 @@ function App() {
   const [user, setUser] = useState(null);
   const [unlockedMissionIndex, setUnlockedMissionIndex] = useState(0);
 
-  // Forcer le hash (#) dans l’URL sur GitHub Pages si absent
-  useEffect(() => {
-    if (
-      window.location.hostname === 'kyliancourel.github.io' &&
-      !window.location.hash
-    ) {
-      window.location.replace(
-        window.location.origin +
-          window.location.pathname +
-          '#' +
-          window.location.search
-      );
-    }
-  }, []);
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
@@ -135,7 +120,6 @@ function App() {
         <Route path="/delete-data" element={<DeleteData />} />
         <Route path="/profile" element={user ? <UserProfile /> : <Home />} />
         <Route path="/lesson/:level/:missionKey/:lessonKey" element={<LessonPage />} />
-        {/* Fallback : rediriger toute route non trouvée vers l'accueil */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
@@ -143,4 +127,3 @@ function App() {
 }
 
 export default App;
-
