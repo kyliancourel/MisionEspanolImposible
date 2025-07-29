@@ -1,10 +1,8 @@
 // signup.js
 import { auth, db } from './libs/firebase.js';
+import { secretKey } from './libs/crypto-key.js';
 import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-// Même clé que dans profile.js (change-la et garde-la secrète)
-const secretKey = 'TA_CLE_SECRETE_ULTRA_SECURE';
 
 function encrypt(data) {
   return CryptoJS.AES.encrypt(data, secretKey).toString();
@@ -13,6 +11,11 @@ function encrypt(data) {
 // Fonction pour redimensionner et compresser l’image
 function resizeImage(file, maxSize = 100) {
   return new Promise((resolve, reject) => {
+    if (file.size > 500000) { // 500 KB max avant compression (ajustable)
+      reject(new Error("Image trop volumineuse, max 500KB."));
+      return;
+    }
+
     const img = new Image();
     const reader = new FileReader();
 
@@ -58,9 +61,12 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       base64Photo = await resizeImage(file);  // Redimensionner + compresser
       preview.src = base64Photo;
+      messageDiv.textContent = "";
     } catch (error) {
       console.error("Erreur lors du redimensionnement de l’image :", error);
-      messageDiv.textContent = "Erreur lors du traitement de la photo. Veuillez réessayer.";
+      messageDiv.textContent = error.message || "Erreur lors du traitement de la photo. Veuillez réessayer.";
+      base64Photo = ""; // Réinitialise photo en erreur
+      preview.src = "";
     }
   });
 

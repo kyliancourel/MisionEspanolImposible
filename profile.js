@@ -1,5 +1,6 @@
 // profile.js
 import { auth, db } from './libs/firebase.js';
+import { secretKey } from './libs/crypto-key.js';
 import {
   onAuthStateChanged,
   signOut,
@@ -9,9 +10,6 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Clé secrète pour AES (change-la par ta propre clé robuste !)
-const secretKey = 'TA_CLE_SECRETE_ULTRA_SECURE';
-
 function encrypt(data) {
   return CryptoJS.AES.encrypt(data, secretKey).toString();
 }
@@ -20,9 +18,9 @@ function decrypt(ciphertext) {
   try {
     const bytes = CryptoJS.AES.decrypt(ciphertext, secretKey);
     const originalText = bytes.toString(CryptoJS.enc.Utf8);
-    return originalText || ciphertext; // si erreur retourne le texte brut
+    return originalText || ciphertext;
   } catch {
-    return ciphertext; // si erreur retourne le texte brut
+    return ciphertext;
   }
 }
 
@@ -102,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       await updateDoc(doc(db, "users", currentUserUid), {
-        // Chiffre avant stockage
         prenom: encrypt(currentUserData.prenom),
         photo: currentUserData.photo ? encrypt(currentUserData.photo) : null
       });
@@ -123,9 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function performAccountDeletion() {
     try {
-      // Supprime document Firestore
       await deleteDoc(doc(db, "users", currentUserUid));
-      // Supprime compte Firebase Auth
       const user = auth.currentUser;
       if (user) {
         await deleteUser(user);
@@ -134,7 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = "index.html";
     } catch (err) {
       if (err.code === 'auth/requires-recent-login') {
-        // Nécessite ré-authentification
         const email = auth.currentUser.email;
         const password = prompt("Veuillez entrer votre mot de passe pour confirmer la suppression du compte :");
         if (!password) {
@@ -145,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const credential = EmailAuthProvider.credential(email, password);
         try {
           await reauthenticateWithCredential(auth.currentUser, credential);
-          // Réessaie la suppression
           await performAccountDeletion();
         } catch (reauthErr) {
           alert("Ré-authentification échouée : " + reauthErr.message);
