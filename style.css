@@ -1,0 +1,743 @@
+/* === Base commune à toutes les pages === */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+:root {
+  --color-primary: #4a90e2;
+  --color-primary-dark: #357ABD;
+  --color-secondary: #50e3c2;
+  --color-bg: #f5f7fa;
+  --color-text: #333;
+  --color-text-light: #666;
+  --color-error: #e74c3c;
+  --color-success: #27ae60;
+  --border-radius: 8px;
+  --transition-speed: 0.3s;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header, footer {
+  background-color: var(--color-primary);
+  color: white;
+  text-align: center;
+  padding: 1rem 1rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+header h1, footer small {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.8rem;
+}
+
+main {
+  flex: 1 0 auto;
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  width: 100%;
+}
+
+button {
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 0.7rem 1.2rem;
+  font-size: 1rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
+}
+
+button:hover,
+button:focus {
+  background-color: var(--color-primary-dark);
+  outline: none;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-speed);
+}
+
+a:hover,
+a:focus {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+section {
+  margin-bottom: 2rem;
+}
+
+#user-info {
+  background-color: #e1f5fe;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#user-info p {
+  margin: 0;
+  font-weight: 600;
+}
+
+#user-info button {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+/* === Styles spécifiques evaluation.html === */
+
+main#content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Quiz spécifique */
+.question {
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.answers {
+  list-style: none;
+  padding-left: 0;
+}
+
+.answers li {
+  background-color: var(--color-bg);
+  border: 1px solid #ccc;
+  padding: 0.7rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
+}
+
+.answers li:hover,
+.answers li:focus {
+  background-color: var(--color-secondary);
+  outline: none;
+  color: white;
+}
+
+.answers li.selected {
+  background-color: var(--color-primary);
+  color: white;
+  font-weight: 700;
+}
+
+.answers li.correct {
+  background-color: var(--color-success);
+  color: white;
+  font-weight: 700;
+}
+
+.answers li.incorrect {
+  background-color: var(--color-error);
+  color: white;
+  font-weight: 700;
+}
+
+.submit-btn {
+  align-self: flex-start;
+  margin-top: 1rem;
+}
+
+/* === Styles spécifiques lesson.html === */
+
+main#content {
+  min-height: auto;
+  line-height: 1.8;
+  font-size: 1.1rem;
+  background-color: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  color: var(--color-text);
+}
+
+main#content h2, main#content h3 {
+  color: var(--color-primary);
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+main#content p {
+  margin-bottom: 1rem;
+}
+
+main#content ul {
+  list-style: disc inside;
+  margin-bottom: 1rem;
+  padding-left: 0;
+}
+
+main#content img {
+  max-width: 100%;
+  border-radius: var(--border-radius);
+  margin: 1rem 0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+main#content blockquote {
+  border-left: 4px solid var(--color-primary);
+  padding-left: 1rem;
+  color: var(--color-primary-dark);
+  font-style: italic;
+  margin: 1rem 0;
+}
+
+/* === Styles spécifiques login.html === */
+
+main {
+  max-width: 400px;
+  margin: 3rem auto 2rem auto;
+  background-color: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+form#login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+label {
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--color-text);
+}
+
+input[type="email"],
+input[type="password"],
+input[type="text"],
+input[type="number"],
+select {
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--border-radius);
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: border-color var(--transition-speed);
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+#message {
+  margin-top: 1rem;
+  min-height: 1.2rem;
+  font-weight: 600;
+  color: var(--color-error);
+  text-align: center;
+}
+
+/* === Styles spécifiques privacy.html === */
+
+main section {
+  background-color: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  line-height: 1.7;
+  color: var(--color-text-light);
+}
+
+main section h2 {
+  color: var(--color-primary);
+  margin-top: 1.5rem;
+  margin-bottom: 0.8rem;
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+
+main section p {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: var(--color-text);
+}
+
+/* === Styles spécifiques profile.html === */
+
+#profile-container {
+  max-width: 500px;
+  margin: 2rem auto 4rem auto;
+  background-color: white;
+  padding: 2rem 2rem 3rem 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-card img#photo {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  margin-bottom: 1rem;
+}
+
+form#profile-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+form#profile-form label {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: var(--color-text);
+}
+
+form#profile-form input[type="text"] {
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--border-radius);
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  transition: border-color var(--transition-speed);
+}
+
+form#profile-form input[type="text"]:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+form#profile-form p {
+  margin: 0.4rem 0 0.8rem 0;
+  font-weight: 500;
+  color: var(--color-text-light);
+}
+
+h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--color-primary);
+  font-weight: 700;
+  border-bottom: 2px solid var(--color-primary);
+  padding-bottom: 0.3rem;
+}
+
+ul#progression-list {
+  list-style: none;
+  padding-left: 1rem;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+  margin-bottom: 1rem;
+  color: var(--color-text-light);
+}
+
+ul#progression-list li {
+  padding: 0.3rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+ul#progression-list li:last-child {
+  border-bottom: none;
+}
+
+button#activate-2fa,
+button#delete-account,
+button#btn-logout {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.8rem;
+  font-size: 1rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
+}
+
+button#activate-2fa:hover,
+button#btn-logout:hover {
+  background-color: var(--color-primary-dark);
+}
+
+button#delete-account {
+  background-color: var(--color-error);
+  margin-top: 1rem;
+}
+
+button#delete-account:hover {
+  background-color: #c0392b;
+}
+
+/* === Styles spécifiques sequence.html === */
+
+#sequence-title {
+  color: var(--color-primary);
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+}
+
+#lesson-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+#lesson-list .lesson-card {
+  background: white;
+  padding: 1rem 1.2rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: box-shadow var(--transition-speed);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 120px;
+}
+
+#lesson-list .lesson-card:hover,
+#lesson-list .lesson-card:focus {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  outline: none;
+}
+
+#lesson-list .lesson-card h3 {
+  margin: 0 0 0.4rem 0;
+  font-weight: 700;
+  color: var(--color-primary);
+  font-size: 1.2rem;
+}
+
+#lesson-list .lesson-card p {
+  margin: 0;
+  color: var(--color-text-light);
+  font-size: 0.95rem;
+}
+
+#start-lesson-btn,
+#go-to-evaluation {
+  display: block;
+  margin: 0 auto 2rem auto;
+  padding: 0.8rem 2rem;
+  font-size: 1.1rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  transition: background-color var(--transition-speed);
+}
+
+#start-lesson-btn:hover,
+#go-to-evaluation:hover,
+#start-lesson-btn:focus,
+#go-to-evaluation:focus {
+  background-color: var(--color-primary-dark);
+  outline: none;
+}
+
+/* === Styles spécifiques signup.html === */
+
+main form#signup-form {
+  max-width: 450px;
+  margin: 2rem auto 3rem auto;
+  background-color: white;
+  padding: 2rem 2rem 2.5rem 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+}
+
+main form#signup-form .form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.3rem;
+}
+
+main form#signup-form label {
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--color-text);
+}
+
+main form#signup-form input[type="text"],
+main form#signup-form input[type="email"],
+main form#signup-form input[type="password"],
+main form#signup-form input[type="number"],
+main form#signup-form select {
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--border-radius);
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: border-color var(--transition-speed);
+}
+
+main form#signup-form input[type="text"]:focus,
+main form#signup-form input[type="email"]:focus,
+main form#signup-form input[type="password"]:focus,
+main form#signup-form input[type="number"]:focus,
+main form#signup-form select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+main form#signup-form input[type="file"] {
+  margin-top: 0.4rem;
+}
+
+main form#signup-form img#preview {
+  margin-top: 10px;
+  display: block;
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(0,0,0,0.15);
+}
+
+main form#signup-form input[type="checkbox"] {
+  margin-right: 0.5rem;
+  transform: scale(1.1);
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+main form#signup-form label[for="rgpd"] {
+  font-weight: normal;
+  color: var(--color-text);
+  display: inline;
+}
+
+main form#signup-form label[for="rgpd"] a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+main form#signup-form label[for="rgpd"] a:hover,
+main form#signup-form label[for="rgpd"] a:focus {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+main form#signup-form button[type="submit"] {
+  align-self: center;
+  margin-top: 1.5rem;
+  width: 100%;
+  max-width: 250px;
+  padding: 0.8rem;
+  font-size: 1.1rem;
+}
+
+/* === Styles spécifiques validate.html === */
+
+main form#validate-form {
+  max-width: 400px;
+  margin: 2rem auto 3rem auto;
+  background-color: white;
+  padding: 2rem 2rem 2.5rem 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+}
+
+main form#validate-form .form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.3rem;
+}
+
+main form#validate-form label {
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--color-text);
+}
+
+main form#validate-form input[type="text"] {
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--border-radius);
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: border-color var(--transition-speed);
+  max-width: 150px;
+}
+
+main form#validate-form input[type="text"]:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+main #message {
+  margin-top: 1rem;
+  min-height: 1.2rem;
+  font-weight: 600;
+  color: var(--color-error);
+  text-align: center;
+}
+
+/* === Responsive === */
+
+/* Small devices (mobile phones, portrait) */
+@media (max-width: 480px) {
+  header h1, footer small {
+    font-size: 1.4rem;
+  }
+
+  main {
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  button {
+    width: 100%;
+    font-size: 1.1rem;
+  }
+
+  #profile-container {
+    margin: 1rem;
+    padding: 1.5rem 1rem 2rem 1rem;
+  }
+
+  #lesson-list {
+    grid-template-columns: 1fr !important;
+  }
+
+  main form#signup-form,
+  main form#validate-form {
+    margin: 1rem auto 2rem auto;
+    padding: 1.5rem 1rem 2rem 1rem;
+  }
+
+  #user-info {
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+}
+
+/* Medium devices (tablets, landscape phones) */
+@media (min-width: 481px) and (max-width: 767px) {
+  header h1, footer small {
+    font-size: 1.6rem;
+  }
+
+  main {
+    max-width: 700px;
+    margin: 1.5rem auto;
+    padding: 1rem 1.5rem;
+  }
+
+  #lesson-list {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  button {
+    font-size: 1.05rem;
+  }
+
+  main form#signup-form,
+  main form#validate-form {
+    max-width: 380px;
+    padding: 1.8rem 1.5rem 2.2rem 1.5rem;
+  }
+}
+
+/* Large devices (desktops) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  header h1, footer small {
+    font-size: 1.75rem;
+  }
+
+  main {
+    max-width: 850px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+  }
+
+  #lesson-list {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+
+  button {
+    font-size: 1rem;
+    padding: 0.75rem 1.3rem;
+  }
+
+  main form#signup-form,
+  main form#validate-form {
+    max-width: 420px;
+  }
+}
+
+/* Extra large devices (large desktops) */
+@media (min-width: 1024px) {
+  header h1, footer small {
+    font-size: 1.8rem;
+  }
+
+  main {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+  }
+
+  #lesson-list {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  button {
+    font-size: 1rem;
+  }
+
+  main form#signup-form,
+  main form#validate-form {
+    max-width: 450px;
+  }
+}

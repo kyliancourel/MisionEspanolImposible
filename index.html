@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Misión Español Imposible</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header>
+    <h1>Misión Español Imposible</h1>
+    <p>Un jeu pour apprendre l’espagnol de la 5ème à la Licence LLCER.</p>
+  </header>
+
+  <!-- Section affichant prénom et bouton déconnexion -->
+  <section id="user-info" style="display:none; margin-bottom: 20px;">
+    <p>Bienvenue, <span id="user-name"></span> !</p>
+    <button id="btn-logout">Déconnexion</button>
+  </section>
+
+  <main>
+    <section id="user-access">
+      <h2>Inscription / Connexion</h2>
+      <button id="btn-create-account">Créer un compte</button>
+      <button id="btn-login">Se connecter</button>
+    </section>
+
+    <section id="content">
+      <!-- Séquences et leçons chargées dynamiquement ici -->
+    </section>
+  </main>
+
+  <footer>
+    <small>&copy; 2025 Misión Español Imposible</small>
+  </footer>
+
+  <script type="module" src="index.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</body>
+
+</html>
