@@ -99,13 +99,19 @@ document.addEventListener('DOMContentLoaded', () => {
     currentUserData.prenom = prenomInput.value.trim();
 
     try {
+      // Mise à jour Firestore avec chiffrement
       await updateDoc(doc(db, "users", currentUserUid), {
         prenom: encrypt(currentUserData.prenom),
         photo: currentUserData.photo ? encrypt(currentUserData.photo) : null
       });
       alert("Profil mis à jour.");
     } catch (err) {
+      console.error("Erreur mise à jour profil:", err);
       alert("Erreur lors de la mise à jour : " + err.message);
+
+      // Optionnel : rollback ou nettoyage partiel si critique
+      // Par exemple, tu peux recharger les données, ou tenter un reset
+      // Ici on se contente d'afficher l'erreur, mais tu peux adapter selon besoins
     }
   });
 

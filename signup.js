@@ -101,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
+      // Création du compte Firebase
       const cred = await createUserWithEmailAndPassword(auth, email, password);
 
       const code = generateCode();
@@ -124,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         evaluations: []
       };
 
+      // Enregistrement profil dans Firestore
       await setDoc(doc(db, "users", cred.user.uid), userProfile);
 
       messageDiv.style.color = "green";
@@ -132,6 +134,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (err) {
       console.error(err);
+
+      // Supprime l'utilisateur Firebase si l'erreur n'est pas "email déjà utilisé"
+      if (err.code !== 'auth/email-already-in-use' && auth.currentUser) {
+        try {
+          await auth.currentUser.delete();
+        } catch (deleteErr) {
+          console.error("Erreur suppression utilisateur Firebase après échec signup :", deleteErr);
+        }
+      }
+
       if (err.code === 'auth/email-already-in-use') {
         messageDiv.textContent = "Cette adresse email est déjà utilisée. Veuillez vous connecter ou utiliser une autre adresse.";
       } else {
