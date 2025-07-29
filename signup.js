@@ -10,6 +10,33 @@ function encrypt(data) {
   return CryptoJS.AES.encrypt(data, secretKey).toString();
 }
 
+// Fonction pour redimensionner et compresser l’image
+function resizeImage(file, maxSize = 100) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      img.src = e.target.result;
+    };
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      const scale = Math.min(maxSize / img.width, maxSize / img.height);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/jpeg", 0.7)); // qualité 70%
+    };
+
+    img.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 async function sendValidationEmail(prenom, email, code) {
   // Intègre ton service d’envoi mail ou EmailJS ici
   console.log(`Envoi du code ${code} à ${email} (simulateur).`);
@@ -24,15 +51,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let base64Photo = "";
 
-  photoInput.addEventListener('change', () => {
+  photoInput.addEventListener('change', async () => {
     const file = photoInput.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      base64Photo = reader.result;
+
+    try {
+      base64Photo = await resizeImage(file);  // Redimensionner + compresser
       preview.src = base64Photo;
-    };
-    reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Erreur lors du redimensionnement de l’image :", error);
+      messageDiv.textContent = "Erreur lors du traitement de la photo. Veuillez réessayer.";
+    }
   });
 
   function generateCode() {
@@ -76,8 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
         email,
         prenom: encrypt(prenom),
         nom: encrypt(nom),
-        age, // on peut laisser âge en clair si souhaité, sinon chiffre aussi avec encrypt(age.toString())
-        niveau, // idem pour niveau, chiffre si besoin
+        age, // chiffre si souhaité : encrypt(age.toString())
+        niveau, // chiffre si souhaité
         photo: base64Photo ? encrypt(base64Photo) : null,
         isValidated: false,
         validationCode: code,
@@ -97,7 +126,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (err) {
       console.error(err);
-      messageDiv.textContent = err.message || "Erreur lors de la création du compte.";
+      if (err.code === 'auth/email-already-in-use') {
+        messageDiv.textContent = "Cette adresse email est déjà utilisée. Veuillez vous connecter ou utiliser une autre adresse.";
+      } else {
+        messageDiv.textContent = err.message || "Erreur lors de la création du compte.";
+      }
     }
   });
 });
