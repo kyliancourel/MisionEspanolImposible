@@ -1,1 +1,48 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"/><link rel="icon" href="/MisionEspanolImposible/favicon.ico"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#000000"/><meta name="description" content="Web site created using create-react-app"/><link rel="apple-touch-icon" href="/MisionEspanolImposible/logo192.png"/><link rel="manifest" href="/MisionEspanolImposible/manifest.json"/><title>React App</title><script defer="defer" src="/MisionEspanolImposible/static/js/main.d336e14a.js"></script><link href="/MisionEspanolImposible/static/css/main.e6c13ad2.css" rel="stylesheet"></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id="root"></div></body></html>
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Misión Español Imposible</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header>
+    <h1>Misión Español Imposible</h1>
+    <p>Un jeu pour apprendre l’espagnol de la 5ème à la Licence LLCER.</p>
+  </header>
+
+  <!-- Section affichant prénom et bouton déconnexion -->
+  <section id="user-info" style="display:none; margin-bottom: 20px;">
+    <p>Bienvenue, <span id="user-name"></span> !</p>
+    <button id="btn-logout">Déconnexion</button>
+  </section>
+
+  <main>
+    <section id="user-access">
+      <h2>Inscription / Connexion</h2>
+      <button id="btn-create-account">Créer un compte</button>
+      <button id="btn-login">Se connecter</button>
+    </section>
+
+    <section id="content">
+      <!-- Séquences et leçons chargées dynamiquement ici -->
+    </section>
+  </main>
+
+  <footer>
+    <small>&copy; 2025 Misión Español Imposible</small>
+  </footer>
+
+  <script type="module" src="index.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script>
+    const AES_KEY = "+bKvLxKMQF8zqM/lqyW2vaRwLTRgLiwrLMTJ5NKLHq1h2+/fGIFUQxlXHWB872COiL9yjwVRwx5HrLLfC/WI8ckTpM3AdYU1DZyy0UJbmgQ=";
+    console.log("Clé AES injectée :", AES_KEY);
+    // Utilise AES_KEY dans ton code JS côté client
+  </script>  
+</body>
+
+</html>
