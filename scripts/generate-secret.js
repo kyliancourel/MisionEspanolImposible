@@ -2,6 +2,12 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
+if (!process.env.AES_SECRET_KEY || !process.env.AES_PASSWORD) {
+    console.error("❌ AES_SECRET_KEY ou AES_PASSWORD est manquant.");
+    process.exit(1);
+  }
+  
+
 // On récupère la clé et le mot de passe depuis les secrets GitHub Actions
 const encryptedKey = process.env.AES_SECRET_KEY;
 const password = process.env.AES_PASSWORD;
