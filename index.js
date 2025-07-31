@@ -1,8 +1,3 @@
-// index.js
-import { AES_KEY } from './config/secretKey.js'; // Assure-toi que ce fichier existe
-
-console.log("Clé AES :", AES_KEY);
-
 import { auth, db } from './libs/firebase.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
