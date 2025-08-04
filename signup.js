@@ -4,14 +4,15 @@ import { secretKey } from './libs/crypto-key.js';
 import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// Fonction de chiffrement AES
 function encrypt(data) {
   return CryptoJS.AES.encrypt(data, secretKey).toString();
 }
 
-// Fonction pour redimensionner et compresser l’image
+// Redimensionne et compresse la photo (max ~100x100, 70% qualité)
 function resizeImage(file, maxSize = 100) {
   return new Promise((resolve, reject) => {
-    if (file.size > 500000) { // 500 KB max avant compression (ajustable)
+    if (file.size > 500000) {
       reject(new Error("Image trop volumineuse, max 500KB."));
       return;
     }
@@ -26,13 +27,11 @@ function resizeImage(file, maxSize = 100) {
     img.onload = () => {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-
       const scale = Math.min(maxSize / img.width, maxSize / img.height);
       canvas.width = img.width * scale;
       canvas.height = img.height * scale;
-
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL("image/jpeg", 0.7)); // qualité 70%
+      resolve(canvas.toDataURL("image/jpeg", 0.7));
     };
 
     img.onerror = reject;
@@ -40,10 +39,20 @@ function resizeImage(file, maxSize = 100) {
   });
 }
 
+// Envoi réel du mail avec EmailJS
 async function sendValidationEmail(prenom, email, code) {
-  // Intègre ton service d’envoi mail ou EmailJS ici
-  console.log(`Envoi du code ${code} à ${email} (simulateur).`);
-  return new Promise(resolve => setTimeout(resolve, 500));
+  try {
+    const result = await emailjs.send("service_htipgeg", "template_ahp970p", {
+      prenom: prenom,
+      email: email,
+      code: code
+    }, "IV4ynVqfhK2_3r-_W"); // ⚠️ Clé publique EmailJS
+
+    console.log("Email envoyé :", result.status);
+  } catch (err) {
+    console.error("Erreur envoi email :", err);
+    throw new Error("Échec de l’envoi du mail de validation.");
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -59,13 +68,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!file) return;
 
     try {
-      base64Photo = await resizeImage(file);  // Redimensionner + compresser
+      base64Photo = await resizeImage(file);
       preview.src = base64Photo;
       messageDiv.textContent = "";
     } catch (error) {
-      console.error("Erreur lors du redimensionnement de l’image :", error);
-      messageDiv.textContent = error.message || "Erreur lors du traitement de la photo. Veuillez réessayer.";
-      base64Photo = ""; // Réinitialise photo en erreur
+      console.error("Erreur photo :", error);
+      messageDiv.textContent = error.message || "Erreur traitement image.";
+      base64Photo = "";
       preview.src = "";
     }
   });
@@ -101,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      // Création du compte Firebase
       const cred = await createUserWithEmailAndPassword(auth, email, password);
 
       const code = generateCode();
@@ -112,8 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
         email,
         prenom: encrypt(prenom),
         nom: encrypt(nom),
-        age, // chiffre si souhaité : encrypt(age.toString())
-        niveau, // chiffre si souhaité
+        age,
+        niveau,
         photo: base64Photo ? encrypt(base64Photo) : null,
         isValidated: false,
         validationCode: code,
@@ -125,29 +133,26 @@ document.addEventListener('DOMContentLoaded', () => {
         evaluations: []
       };
 
-      // Enregistrement profil dans Firestore
       await setDoc(doc(db, "users", cred.user.uid), userProfile);
 
       messageDiv.style.color = "green";
-      messageDiv.textContent = "Inscription réussie ! Un code de validation a été envoyé à votre email.";
+      messageDiv.textContent = "Inscription réussie ! Code envoyé par email.";
       setTimeout(() => window.location.href = "validate.html", 3000);
 
     } catch (err) {
       console.error(err);
-
-      // Supprime l'utilisateur Firebase si l'erreur n'est pas "email déjà utilisé"
       if (err.code !== 'auth/email-already-in-use' && auth.currentUser) {
         try {
           await auth.currentUser.delete();
         } catch (deleteErr) {
-          console.error("Erreur suppression utilisateur Firebase après échec signup :", deleteErr);
+          console.error("Erreur suppression utilisateur Firebase :", deleteErr);
         }
       }
 
       if (err.code === 'auth/email-already-in-use') {
-        messageDiv.textContent = "Cette adresse email est déjà utilisée. Veuillez vous connecter ou utiliser une autre adresse.";
+        messageDiv.textContent = "Email déjà utilisé.";
       } else {
-        messageDiv.textContent = err.message || "Erreur lors de la création du compte.";
+        messageDiv.textContent = err.message || "Erreur inscription.";
       }
     }
   });
