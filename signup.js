@@ -1,8 +1,9 @@
 // signup.js
 import { auth, db } from './libs/firebase.js';
-import { secretKey } from './libs/crypto-key.js';
+import { secretKey } from './libs/encrypted-key.js';
 import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {send} from "https://cdn.jsdelivr.net/npm/@emailjs/browser@3.11.0/+esm";
 
 // Fonction de chiffrement AES
 function encrypt(data) {
@@ -43,10 +44,12 @@ function resizeImage(file, maxSize = 100) {
 async function sendValidationEmail(prenom, email, code) {
   try {
     const result = await emailjs.send("service_htipgeg", "template_ahp970p", {
-      prenom: prenom,
-      email: email,
-      code: code
-    }, "IV4ynVqfhK2_3r-_W");
+      prenom,
+      email,
+      code
+    }, {
+      publicKey: "IV4ynVqfhK2_3r-_W"
+  });
 
     console.log("Email envoyé :", result.status);
   } catch (err) {
@@ -71,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       base64Photo = await resizeImage(file);
       preview.src = base64Photo;
+      preview.style.display = "block";
       messageDiv.textContent = "";
     } catch (error) {
       console.error("Erreur traitement image :", error);
