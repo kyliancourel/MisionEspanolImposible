@@ -3,6 +3,7 @@ import { auth, db } from './libs/firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { secretKey } from './libs/crypto-key.js';
+import {send} from "https://cdn.jsdelivr.net/npm/@emailjs/browser@3.11.0/+esm";
 
 function decrypt(ciphertext) {
   try {
@@ -15,11 +16,13 @@ function decrypt(ciphertext) {
 
 async function resendValidationEmail(prenom, email, code) {
   try {
-    const result = await emailjs.send("service_htipgeg", "template_ahp970p", {
-      prenom: prenom,
-      email: email,
-      code: code
-    }, "IV4ynVqfhK2_3r-_W");
+    const result = await send("service_htipgeg", "template_ahp970p", {
+      prenom,
+      email,
+      code
+    }, {
+      publicKey: "IV4ynVqfhK2_3r-_W"
+  });
 
     alert("Code renvoyé par mail !");
     console.log("Email renvoyé :", result.status);

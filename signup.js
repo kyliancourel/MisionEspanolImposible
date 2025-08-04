@@ -43,7 +43,7 @@ function resizeImage(file, maxSize = 100) {
 // Envoi réel du mail avec EmailJS
 async function sendValidationEmail(prenom, email, code) {
   try {
-    const result = await emailjs.send("service_htipgeg", "template_ahp970p", {
+    const result = await send("service_htipgeg", "template_ahp970p", {
       prenom,
       email,
       code
