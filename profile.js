@@ -10,10 +10,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// 🔐 Fonctions de chiffrement
 function encrypt(data) {
   return CryptoJS.AES.encrypt(data, secretKey).toString();
 }
-
 function decrypt(ciphertext) {
   try {
     const bytes = CryptoJS.AES.decrypt(ciphertext, secretKey);
@@ -24,10 +24,34 @@ function decrypt(ciphertext) {
   }
 }
 
+// 🔁 Chargement dynamique de toutes les séquences du niveau de l'utilisateur
+async function loadAllSequences(niveau, validatedList = []) {
+  try {
+    const response = await fetch('./data/sequences.json');
+    const allData = await response.json();
+    const levelSequences = allData[niveau];
+
+    progressionList.innerHTML = '';
+
+    levelSequences.forEach(seq => {
+      const isValidated = validatedList.some(
+        s => decrypt(s.title) === seq.title && s.validated
+      );
+      const li = document.createElement('li');
+      li.textContent = `${seq.title} ${isValidated ? '✅' : '❌'}`;
+      progressionList.appendChild(li);
+    });
+  } catch (error) {
+    console.error("Erreur chargement des séquences :", error);
+    progressionList.innerHTML = '<li>Erreur de chargement des séquences.</li>';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   let currentUserUid = null;
   let currentUserData = null;
 
+  // Références aux éléments HTML
   const photoImg = document.getElementById('photo');
   const prenomInput = document.getElementById('prenom');
   const nomSpan = document.getElementById('nom');
@@ -41,25 +65,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const btn2FA = document.getElementById('activate-2fa');
   const btnDelete = document.getElementById('delete-account');
 
+  // 🔍 Authentification utilisateur
   onAuthStateChanged(auth, async (firebaseUser) => {
     if (!firebaseUser) {
       alert("Utilisateur non connecté.");
       window.location.href = "login.html";
       return;
     }
-    currentUserUid = firebaseUser.uid;
 
+    currentUserUid = firebaseUser.uid;
     const userDocRef = doc(db, "users", currentUserUid);
     const userSnap = await getDoc(userDocRef);
+
     if (!userSnap.exists()) {
       alert("Profil introuvable.");
       await signOut(auth);
       window.location.href = "login.html";
       return;
     }
+
     currentUserData = userSnap.data();
 
-    // Déchiffre les champs sensibles avant affichage
+    // Affichage des infos déchiffrées
     photoImg.src = currentUserData.photo ? decrypt(currentUserData.photo) : 'https://via.placeholder.com/100';
     prenomInput.value = currentUserData.prenom ? decrypt(currentUserData.prenom) : '';
     nomSpan.textContent = currentUserData.nom ? decrypt(currentUserData.nom) : '';
@@ -67,16 +94,11 @@ document.addEventListener('DOMContentLoaded', () => {
     niveauSpan.textContent = currentUserData.niveau || '';
     emailSpan.textContent = currentUserData.email || '';
 
-    progressionList.innerHTML = '';
-    currentUserData.progression?.sequences?.forEach(seq => {
-      const title = seq.title ? decrypt(seq.title) : '';
-      const validated = seq.validated ? '✅' : '❌';
-      const li = document.createElement('li');
-      li.textContent = `${title} ${validated}`;
-      progressionList.appendChild(li);
-    });
+    // Chargement des séquences du niveau
+    await loadAllSequences(currentUserData.niveau, currentUserData.progression?.sequences || []);
   });
 
+  // 📸 Changement de photo
   photoUpload.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file || !file.type.startsWith('image/')) return;
@@ -90,16 +112,17 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.readAsDataURL(file);
   });
 
+  // 💾 Mise à jour profil
   profileForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!currentUserUid || !currentUserData) {
       alert("Utilisateur non connecté ou données non chargées.");
       return;
     }
+
     currentUserData.prenom = prenomInput.value.trim();
 
     try {
-      // Mise à jour Firestore avec chiffrement
       await updateDoc(doc(db, "users", currentUserUid), {
         prenom: encrypt(currentUserData.prenom),
         photo: currentUserData.photo ? encrypt(currentUserData.photo) : null
@@ -108,29 +131,26 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error("Erreur mise à jour profil:", err);
       alert("Erreur lors de la mise à jour : " + err.message);
-
-      // Optionnel : rollback ou nettoyage partiel si critique
-      // Par exemple, tu peux recharger les données, ou tenter un reset
-      // Ici on se contente d'afficher l'erreur, mais tu peux adapter selon besoins
     }
   });
 
+  // 🔐 Déconnexion
   btnLogout.addEventListener('click', async () => {
     await signOut(auth);
     window.location.href = "index.html";
   });
 
+  // 🔒 Authentification 2FA (non implémentée)
   btn2FA.addEventListener('click', () => {
     alert("Activation de l'authentification à deux facteurs non encore implémentée.");
   });
 
+  // 🧨 Suppression de compte
   async function performAccountDeletion() {
     try {
       await deleteDoc(doc(db, "users", currentUserUid));
       const user = auth.currentUser;
-      if (user) {
-        await deleteUser(user);
-      }
+      if (user) await deleteUser(user);
       alert("Compte supprimé.");
       window.location.href = "index.html";
     } catch (err) {
@@ -159,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnDelete.addEventListener('click', async () => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.")) return;
-
     btnDelete.disabled = true;
     await performAccountDeletion();
   });

@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       messageDiv.style.color = "green";
       messageDiv.textContent = "Connexion réussie !";
-      setTimeout(() => window.location.href = "index.html", 2000);
+      setTimeout(() => window.location.href = "profile.html", 2000);
 
     } catch (err) {
       console.error(err);

@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         messageDiv.style.color = 'green';
         messageDiv.textContent = "Validation réussie ! Redirection...";
-        setTimeout(() => window.location.href = 'index.html', 2000);
+        setTimeout(() => window.location.href = 'profile.html', 2000);
       } else {
         messageDiv.textContent = "Code incorrect, veuillez réessayer.";
       }
