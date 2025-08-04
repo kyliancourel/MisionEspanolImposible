@@ -1,3 +1,4 @@
+// index.js
 import { auth, db } from './libs/firebase.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -41,31 +42,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Gère la session utilisateur Firebase
   onAuthStateChanged(auth, async (user) => {
-    console.log("Événement Auth : ", user);
-
-    if (user) {
+    if (user && user.emailVerified) {
+      // Utilisateur connecté ET email validé
       try {
-        console.log("Utilisateur connecté :", user.uid);
-
-        const userRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userRef);
-
+        const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          console.log("Données utilisateur récupérées :", userData);
-
           userNameSpan.textContent = userData.prenom || user.email || 'Utilisateur';
           userInfoSection.style.display = 'block';
           userAccessSection.style.display = 'none';
 
+          // Affiche la progression
           if (userData.progression && userData.progression.sequences) {
             displaySequences(userData.progression.sequences);
           } else {
             contentSection.innerHTML = '<p>Aucune progression trouvée.</p>';
           }
         } else {
-          console.warn('Document utilisateur non trouvé dans Firestore.');
           userNameSpan.textContent = 'Utilisateur';
           userInfoSection.style.display = 'block';
           userAccessSection.style.display = 'none';
@@ -73,29 +68,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } catch (err) {
         console.error('Erreur récupération progression Firestore :', err);
-
-        if (err.code === 'permission-denied') {
-          contentSection.innerHTML = '<p>Accès interdit : vous n’avez pas les permissions Firestore nécessaires.</p>';
-        } else {
-          contentSection.innerHTML = '<p>Erreur lors du chargement des données.</p>';
-        }
-
         userInfoSection.style.display = 'none';
         userAccessSection.style.display = 'block';
+        contentSection.innerHTML = '<p>Erreur lors du chargement des données (Firestore).</p>';
       }
     } else {
-      console.log("Aucun utilisateur connecté");
+      // Pas connecté ou email non vérifié → séquence gratuite uniquement
+      console.log("Utilisateur non connecté ou email non vérifié.");
       userInfoSection.style.display = 'none';
       userAccessSection.style.display = 'block';
       displayFreeSequence();
     }
   });
 
+  // Bouton déconnexion
   btnLogout.addEventListener('click', async () => {
     await signOut(auth);
     window.location.reload();
   });
 
+  // Boutons navigation
   btnCreateAccount.addEventListener('click', () => {
     window.location.href = 'signup.html';
   });
