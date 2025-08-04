@@ -9,7 +9,7 @@ function encrypt(data) {
   return CryptoJS.AES.encrypt(data, secretKey).toString();
 }
 
-// Redimensionne et compresse l’image (max ~100x100, qualité 70%)
+// Redimensionne et compresse la photo (max ~100x100, 70% qualité)
 function resizeImage(file, maxSize = 100) {
   return new Promise((resolve, reject) => {
     if (file.size > 500000) {
@@ -39,7 +39,7 @@ function resizeImage(file, maxSize = 100) {
   });
 }
 
-// Envoi réel de l'email avec EmailJS
+// Envoi réel du mail avec EmailJS
 async function sendValidationEmail(prenom, email, code) {
   try {
     const result = await emailjs.send("service_htipgeg", "template_ahp970p", {
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let base64Photo = "";
 
-  // Aperçu de l'image
+  // Aperçu dynamique de la photo de profil
   photoInput.addEventListener('change', async () => {
     const file = photoInput.files[0];
     if (!file) return;
@@ -72,21 +72,18 @@ document.addEventListener('DOMContentLoaded', () => {
       base64Photo = await resizeImage(file);
       preview.src = base64Photo;
       messageDiv.textContent = "";
-      console.log("Aperçu image chargé.");
     } catch (error) {
-      console.error("Erreur image :", error);
-      messageDiv.textContent = error.message || "Erreur image.";
+      console.error("Erreur traitement image :", error);
+      messageDiv.textContent = error.message || "Erreur traitement image.";
       base64Photo = "";
       preview.src = "https://via.placeholder.com/100";
     }
   });
 
-  // Génère un code à 6 chiffres
   function generateCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
-  // Soumission formulaire
   form.addEventListener('submit', async e => {
     e.preventDefault();
     messageDiv.textContent = "";
@@ -104,19 +101,23 @@ document.addEventListener('DOMContentLoaded', () => {
       messageDiv.textContent = "Merci de remplir tous les champs.";
       return;
     }
+
     if (password.length < 6) {
       messageDiv.textContent = "Mot de passe trop court.";
       return;
     }
+
     if (!rgpdChecked) {
       messageDiv.textContent = "Vous devez accepter la politique de confidentialité.";
       return;
     }
 
     try {
+      // Création compte Firebase
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       const code = generateCode();
 
+      // Envoi du mail de validation
       await sendValidationEmail(prenom, email, code);
 
       const userProfile = {
@@ -140,18 +141,16 @@ document.addEventListener('DOMContentLoaded', () => {
       await setDoc(doc(db, "users", cred.user.uid), userProfile);
 
       messageDiv.style.color = "green";
-      messageDiv.textContent = "Inscription réussie ! Redirection...";
-      console.log("Redirection dans 3 secondes...");
+      messageDiv.textContent = "Inscription réussie ! Un code a été envoyé à votre adresse.";
       setTimeout(() => window.location.href = "validate.html", 3000);
 
     } catch (err) {
       console.error(err);
-
       if (err.code !== 'auth/email-already-in-use' && auth.currentUser) {
         try {
           await auth.currentUser.delete();
         } catch (deleteErr) {
-          console.error("Erreur suppression utilisateur Firebase :", deleteErr);
+          console.error("Erreur suppression utilisateur :", deleteErr);
         }
       }
 
