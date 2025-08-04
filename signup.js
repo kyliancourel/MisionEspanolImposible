@@ -9,7 +9,7 @@ function encrypt(data) {
   return CryptoJS.AES.encrypt(data, secretKey).toString();
 }
 
-// Redimensionne et compresse la photo (max ~100x100, 70% qualité)
+// Redimensionne et compresse l’image (max ~100x100, qualité 70%)
 function resizeImage(file, maxSize = 100) {
   return new Promise((resolve, reject) => {
     if (file.size > 500000) {
@@ -39,14 +39,14 @@ function resizeImage(file, maxSize = 100) {
   });
 }
 
-// Envoi réel du mail avec EmailJS
+// Envoi réel de l'email avec EmailJS
 async function sendValidationEmail(prenom, email, code) {
   try {
     const result = await emailjs.send("service_htipgeg", "template_ahp970p", {
       prenom: prenom,
       email: email,
       code: code
-    }, "IV4ynVqfhK2_3r-_W"); // ⚠️ Clé publique EmailJS
+    }, "IV4ynVqfhK2_3r-_W");
 
     console.log("Email envoyé :", result.status);
   } catch (err) {
@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let base64Photo = "";
 
+  // Aperçu de l'image
   photoInput.addEventListener('change', async () => {
     const file = photoInput.files[0];
     if (!file) return;
@@ -71,18 +72,21 @@ document.addEventListener('DOMContentLoaded', () => {
       base64Photo = await resizeImage(file);
       preview.src = base64Photo;
       messageDiv.textContent = "";
+      console.log("Aperçu image chargé.");
     } catch (error) {
-      console.error("Erreur photo :", error);
-      messageDiv.textContent = error.message || "Erreur traitement image.";
+      console.error("Erreur image :", error);
+      messageDiv.textContent = error.message || "Erreur image.";
       base64Photo = "";
-      preview.src = "";
+      preview.src = "https://via.placeholder.com/100";
     }
   });
 
+  // Génère un code à 6 chiffres
   function generateCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
+  // Soumission formulaire
   form.addEventListener('submit', async e => {
     e.preventDefault();
     messageDiv.textContent = "";
@@ -111,8 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
-
       const code = generateCode();
+
       await sendValidationEmail(prenom, email, code);
 
       const userProfile = {
@@ -136,11 +140,13 @@ document.addEventListener('DOMContentLoaded', () => {
       await setDoc(doc(db, "users", cred.user.uid), userProfile);
 
       messageDiv.style.color = "green";
-      messageDiv.textContent = "Inscription réussie ! Code envoyé par email.";
+      messageDiv.textContent = "Inscription réussie ! Redirection...";
+      console.log("Redirection dans 3 secondes...");
       setTimeout(() => window.location.href = "validate.html", 3000);
 
     } catch (err) {
       console.error(err);
+
       if (err.code !== 'auth/email-already-in-use' && auth.currentUser) {
         try {
           await auth.currentUser.delete();
