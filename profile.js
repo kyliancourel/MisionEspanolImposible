@@ -1,6 +1,6 @@
 // profile.js
 import { auth, db } from './libs/firebase.js';
-import { secretKey } from './libs/crypto-key.js';
+import { secretKey } from './libs/encrypted-key.js';
 import {
   onAuthStateChanged,
   signOut,
