@@ -42,35 +42,49 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   onAuthStateChanged(auth, async (user) => {
+    console.log("Événement Auth : ", user);
+
     if (user) {
       try {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
+        console.log("Utilisateur connecté :", user.uid);
+
+        const userRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userRef);
+
         if (userDoc.exists()) {
           const userData = userDoc.data();
+          console.log("Données utilisateur récupérées :", userData);
+
           userNameSpan.textContent = userData.prenom || user.email || 'Utilisateur';
           userInfoSection.style.display = 'block';
           userAccessSection.style.display = 'none';
 
-          // Affiche la progression
           if (userData.progression && userData.progression.sequences) {
             displaySequences(userData.progression.sequences);
           } else {
             contentSection.innerHTML = '<p>Aucune progression trouvée.</p>';
           }
         } else {
+          console.warn('Document utilisateur non trouvé dans Firestore.');
           userNameSpan.textContent = 'Utilisateur';
           userInfoSection.style.display = 'block';
           userAccessSection.style.display = 'none';
           contentSection.innerHTML = '<p>Profil utilisateur introuvable.</p>';
         }
       } catch (err) {
-        console.error('Erreur récupération progression:', err);
+        console.error('Erreur récupération progression Firestore :', err);
+
+        if (err.code === 'permission-denied') {
+          contentSection.innerHTML = '<p>Accès interdit : vous n’avez pas les permissions Firestore nécessaires.</p>';
+        } else {
+          contentSection.innerHTML = '<p>Erreur lors du chargement des données.</p>';
+        }
+
         userInfoSection.style.display = 'none';
         userAccessSection.style.display = 'block';
-        contentSection.innerHTML = '<p>Erreur lors du chargement des données.</p>';
       }
     } else {
-      // Pas connecté, accès limité
+      console.log("Aucun utilisateur connecté");
       userInfoSection.style.display = 'none';
       userAccessSection.style.display = 'block';
       displayFreeSequence();
