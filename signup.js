@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       messageDiv.style.color = "green";
       messageDiv.textContent = "Inscription réussie ! Un code a été envoyé à votre adresse.";
-      setTimeout(() => window.location.href = "validate.html", 3000);
+      setTimeout(() => window.location.href = "./validate.html", 3000);
 
     } catch (err) {
       console.error(err);
