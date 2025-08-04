@@ -1,15 +1,15 @@
 // validate.js
 import { auth, db } from './libs/firebase.js';
+import { secretKey } from './libs/encrypted-key.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { secretKey } from './libs/crypto-key.js';
-import {send} from "https://cdn.jsdelivr.net/npm/@emailjs/browser@3.11.0/+esm";
+import { send } from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/+esm";
 
 function decrypt(ciphertext) {
   try {
     const bytes = CryptoJS.AES.decrypt(ciphertext, secretKey);
     return bytes.toString(CryptoJS.enc.Utf8);
-  } catch (e) {
+  } catch {
     return "";
   }
 }
@@ -22,7 +22,7 @@ async function resendValidationEmail(prenom, email, code) {
       code
     }, {
       publicKey: "IV4ynVqfhK2_3r-_W"
-  });
+    });
 
     alert("Code renvoyé par mail !");
     console.log("Email renvoyé :", result.status);

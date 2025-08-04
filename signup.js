@@ -3,14 +3,14 @@ import { auth, db } from './libs/firebase.js';
 import { secretKey } from './libs/encrypted-key.js';
 import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import {send} from "https://cdn.jsdelivr.net/npm/@emailjs/browser@3.11.0/+esm";
+import { send } from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/+esm";
 
 // Fonction de chiffrement AES
 function encrypt(data) {
   return CryptoJS.AES.encrypt(data, secretKey).toString();
 }
 
-// Redimensionne et compresse la photo (max ~100x100, 70% qualité)
+// Redimensionne et compresse la photo
 function resizeImage(file, maxSize = 100) {
   return new Promise((resolve, reject) => {
     if (file.size > 500000) {
@@ -21,10 +21,7 @@ function resizeImage(file, maxSize = 100) {
     const img = new Image();
     const reader = new FileReader();
 
-    reader.onload = (e) => {
-      img.src = e.target.result;
-    };
-
+    reader.onload = (e) => (img.src = e.target.result);
     img.onload = () => {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
@@ -34,13 +31,12 @@ function resizeImage(file, maxSize = 100) {
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       resolve(canvas.toDataURL("image/jpeg", 0.7));
     };
-
     img.onerror = reject;
     reader.readAsDataURL(file);
   });
 }
 
-// Envoi réel du mail avec EmailJS
+// Envoi mail de validation via EmailJS
 async function sendValidationEmail(prenom, email, code) {
   try {
     const result = await send("service_htipgeg", "template_ahp970p", {
@@ -49,7 +45,7 @@ async function sendValidationEmail(prenom, email, code) {
       code
     }, {
       publicKey: "IV4ynVqfhK2_3r-_W"
-  });
+    });
 
     console.log("Email envoyé :", result.status);
   } catch (err) {
@@ -63,10 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const photoInput = document.getElementById('photo');
   const preview = document.getElementById('preview');
   const messageDiv = document.getElementById('message');
-
   let base64Photo = "";
 
-  // Aperçu dynamique de la photo de profil
   photoInput.addEventListener('change', async () => {
     const file = photoInput.files[0];
     if (!file) return;
@@ -117,11 +111,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      // Création compte Firebase
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       const code = generateCode();
 
-      // Envoi du mail de validation
       await sendValidationEmail(prenom, email, code);
 
       const userProfile = {
@@ -158,11 +150,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      if (err.code === 'auth/email-already-in-use') {
-        messageDiv.textContent = "Email déjà utilisé.";
-      } else {
-        messageDiv.textContent = err.message || "Erreur inscription.";
-      }
+      messageDiv.textContent = (err.code === 'auth/email-already-in-use')
+        ? "Email déjà utilisé."
+        : (err.message || "Erreur inscription.");
     }
   });
 });
