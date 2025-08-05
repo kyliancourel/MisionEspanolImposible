@@ -38,6 +38,30 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script type="module" src="./index.js"></script>
+  <script type="module">
+    import { auth } from './libs/firebase.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { db } from './libs/firebase.js';
+  
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userDocRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userDocRef);
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          if (userData.isValidated) {
+            // ✅ Redirection directe si utilisateur déjà connecté et validé
+            window.location.href = "profile.html";
+          } else {
+            // 🔄 Si pas encore validé → rediriger vers validate
+            window.location.href = "validate.html";
+          }
+        }
+      }
+    });
+  </script>
+  
 </body>
 
 </html>
