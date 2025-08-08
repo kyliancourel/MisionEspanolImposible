@@ -2,7 +2,19 @@
 import { auth, db } from './libs/firebase.js';
 import { doc, getDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { onAuthStateChanged, signOut, deleteUser, reauthenticateWithCredential, EmailAuthProvider } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { decryptData, encryptData } from './libs/encrypted-key.js';
+import { decryptData } from './libs/encrypted-key.js';
+
+// --- Ajouter la fonction encryptData locale car non exportée ---
+// On réutilise CryptoJS via le CDN, assure-toi que CryptoJS est chargé dans ton index.html ou ajoute un import ici
+import CryptoJS from "https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/+esm";
+
+async function encryptData(data) {
+  try {
+    return CryptoJS.AES.encrypt(data, await decryptData.secretKey || '').toString();
+  } catch {
+    return data;
+  }
+}
 
 // Sélecteurs DOM
 const prenomInput = document.getElementById('prenom');
@@ -18,14 +30,13 @@ const logoutBtn = document.getElementById('btn-logout');
 const deleteAccountBtn = document.getElementById('delete-account');
 const activate2FABtn = document.getElementById('activate-2fa');
 
-// Message de chargement temporaire
 progressionList.innerHTML = '<li>Chargement des données...</li>';
 
 let currentUserUid = null;
 let currentUserData = null;
 let allSequences = [];
 
-// Gestionnaire de session
+// Gestion de session utilisateur
 onAuthStateChanged(auth, async user => {
   if (!user) {
     alert("Veuillez vous connecter.");
@@ -41,98 +52,103 @@ onAuthStateChanged(auth, async user => {
 
   if (!userDocSnap.exists()) {
     alert("Profil introuvable.");
+    window.location.href = './login.html';
     return;
   }
 
-  // Déchiffrement
   const data = userDocSnap.data();
+
+  // Déchiffrement des données, on traite null ou undefined
   currentUserData = {
-    prenom: await decryptData(data.prenom),
-    nom: await decryptData(data.nom),
-    age: await decryptData(data.age),
-    niveau: await decryptData(data.niveau),
-    photo: await decryptData(data.photo),
+    prenom: data.prenom ? decryptData(data.prenom) : '',
+    nom: data.nom ? decryptData(data.nom) : '',
+    age: data.age ? decryptData(data.age) : '',
+    niveau: data.niveau ? decryptData(data.niveau) : '',
+    photo: data.photo ? decryptData(data.photo) : '',
     progression: data.progression || {}
   };
 
-  // Affichage
+  // Mise à jour de l'interface
   prenomInput.value = currentUserData.prenom;
-  photoImg.src = currentUserData.photo;
+  photoImg.src = currentUserData.photo || 'https://via.placeholder.com/100';
   nomSpan.textContent = currentUserData.nom;
   ageSpan.textContent = currentUserData.age;
   niveauSpan.textContent = currentUserData.niveau;
 
-  // Chargement séquences + progression
-  loadSequencesAndDisplayProgress();
+  // Chargement et affichage des séquences et progression
+  await loadSequencesAndDisplayProgress();
 });
 
-// Fonction : Charger les séquences et afficher la progression
+// Charge les séquences depuis JSON et affiche la progression
 async function loadSequencesAndDisplayProgress() {
   try {
     const response = await fetch('./data/sequences.json');
     const json = await response.json();
 
-    // Fusionner toutes les séquences dans une seule liste
+    // Fusionne toutes les séquences par niveau en une liste plate avec titres
     allSequences = Object.values(json).flatMap(niveau =>
-      niveau.flatMap(se => [se.titre, ...(se.lecons || []), se.evaluation])
+      niveau.map(seq => seq.title || seq.titre || '').filter(Boolean)
     );
 
-    // Afficher progression
     progressionList.innerHTML = '';
-    allSequences.forEach(item => {
+    allSequences.forEach(title => {
+      const done = currentUserData.progression[title] === true;
       const li = document.createElement('li');
-      const status = currentUserData.progression[item] ? '✅' : '❌';
-      li.textContent = `${status} ${item}`;
+      li.textContent = `${done ? '✅' : '❌'} ${title}`;
       progressionList.appendChild(li);
     });
   } catch (error) {
     console.error('Erreur chargement des séquences :', error);
-    progressionList.innerHTML = '<li>Erreur de chargement</li>';
+    progressionList.innerHTML = '<li>Erreur de chargement des séquences.</li>';
   }
 }
 
-// Changement de photo : compression + chiffrement immédiat
-photoUpload.addEventListener('change', async (event) => {
+// Gestion du changement photo (compression + stockage chiffré)
+photoUpload.addEventListener('change', (event) => {
   const file = event.target.files[0];
-  if (!file) return;
+  if (!file || !file.type.startsWith('image/')) return;
 
   const reader = new FileReader();
-  reader.onload = async () => {
+  reader.onload = () => {
     const img = new Image();
     img.src = reader.result;
 
     img.onload = async () => {
-      const canvas = document.createElement('canvas');
       const maxSize = 150;
+      const canvas = document.createElement('canvas');
       const scale = Math.min(maxSize / img.width, maxSize / img.height);
       canvas.width = img.width * scale;
       canvas.height = img.height * scale;
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
       const base64 = canvas.toDataURL('image/jpeg', 0.7);
       photoImg.src = base64;
 
-      // Stocker l'image chiffrée en attente de sauvegarde
-      currentUserData.photo = await encryptData(base64);
+      // Stocker la photo en clair pour le moment
+      currentUserData.photo = base64;
     };
   };
   reader.readAsDataURL(file);
 });
 
-// Enregistrement des modifications
+// Sauvegarde du profil
 profileForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const newPrenom = prenomInput.value.trim();
   if (newPrenom.length < 2) {
-    alert("Prénom trop court.");
+    alert("Le prénom est trop court.");
     return;
   }
 
-  const prenomChiffre = await encryptData(newPrenom);
-  const photoChiffree = currentUserData.photo; // déjà chiffrée à l'upload
-
   try {
+    const prenomChiffre = CryptoJS.AES.encrypt(newPrenom, await decryptData.secretKey).toString();
+    const photoChiffree = currentUserData.photo
+      ? CryptoJS.AES.encrypt(currentUserData.photo, await decryptData.secretKey).toString()
+      : null;
+
     await updateDoc(doc(db, "users", currentUserUid), {
       prenom: prenomChiffre,
       photo: photoChiffree
@@ -140,8 +156,8 @@ profileForm.addEventListener('submit', async (e) => {
 
     alert("Profil mis à jour !");
   } catch (error) {
-    console.error("Erreur update :", error);
-    alert("Erreur lors de la mise à jour.");
+    console.error("Erreur lors de la mise à jour :", error);
+    alert("Erreur lors de la mise à jour du profil.");
   }
 });
 
@@ -151,12 +167,12 @@ logoutBtn.addEventListener('click', async () => {
   window.location.href = './login.html';
 });
 
-// Suppression de compte avec confirmation
+// Suppression de compte avec confirmation et ré-authentification si nécessaire
 deleteAccountBtn.addEventListener('click', async () => {
-  if (!confirm("Confirmer la suppression de votre compte ?")) return;
+  if (!confirm("Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.")) return;
 
   const email = auth.currentUser.email;
-  const password = prompt("Entrez votre mot de passe pour confirmer :");
+  const password = prompt("Veuillez entrer votre mot de passe pour confirmer la suppression :");
 
   if (!password) return;
 
@@ -168,12 +184,12 @@ deleteAccountBtn.addEventListener('click', async () => {
     alert("Compte supprimé.");
     window.location.href = './signup.html';
   } catch (error) {
-    console.error("Erreur suppression :", error);
-    alert("Échec de la suppression. Mot de passe incorrect ou erreur.");
+    console.error("Erreur lors de la suppression du compte :", error);
+    alert("Erreur : mot de passe incorrect ou problème rencontré.");
   }
 });
 
-// Placeholder pour le bouton 2FA
+// Bouton 2FA (placeholder)
 activate2FABtn.addEventListener('click', () => {
-  alert("La 2FA sera bientôt disponible !");
+  alert("L'authentification à deux facteurs sera bientôt disponible.");
 });
