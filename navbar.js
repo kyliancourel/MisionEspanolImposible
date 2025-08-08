@@ -9,9 +9,9 @@ export function createNavbarIfAuthenticated() {
     const navbar = document.createElement('nav');
     navbar.innerHTML = `
       <ul style="display: flex; gap: 20px; padding: 10px; background-color: #eee;">
-        <li><a href="index.html">Accueil</a></li>
-        <li><a href="sequences.html">Mes séquences</a></li>
-        <li><a href="profile.html">Mon profil</a></li>
+        <li><a href="./index.html">Accueil</a></li>
+        <li><a href="./sequence.html">Mes séquences</a></li>
+        <li><a href="./profile.html">Mon profil</a></li>
         <li><button id="logout-btn">Se déconnecter</button></li>
       </ul>
     `;
