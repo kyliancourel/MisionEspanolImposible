@@ -1,98 +1,179 @@
 // profile.js
 import { auth, db } from './libs/firebase.js';
-import { secretKey } from './libs/encrypted-key.js';
-import { signOut, deleteUser, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, getDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { onAuthStateChanged, signOut, deleteUser, reauthenticateWithCredential, EmailAuthProvider } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { decryptData, encryptData } from './libs/encrypted-key.js';
 
-// Fonction de déchiffrement AES
-function decrypt(data) {
+// Sélecteurs DOM
+const prenomInput = document.getElementById('prenom');
+const photoImg = document.getElementById('photo');
+const photoUpload = document.getElementById('photo-upload');
+const nomSpan = document.getElementById('nom');
+const ageSpan = document.getElementById('age');
+const niveauSpan = document.getElementById('niveau');
+const emailSpan = document.getElementById('email');
+const progressionList = document.getElementById('progression-list');
+const profileForm = document.getElementById('profile-form');
+const logoutBtn = document.getElementById('btn-logout');
+const deleteAccountBtn = document.getElementById('delete-account');
+const activate2FABtn = document.getElementById('activate-2fa');
+
+// Message de chargement temporaire
+progressionList.innerHTML = '<li>Chargement des données...</li>';
+
+let currentUserUid = null;
+let currentUserData = null;
+let allSequences = [];
+
+// Gestionnaire de session
+onAuthStateChanged(auth, async user => {
+  if (!user) {
+    alert("Veuillez vous connecter.");
+    window.location.href = './login.html';
+    return;
+  }
+
+  currentUserUid = user.uid;
+  emailSpan.textContent = user.email;
+
+  const userDocRef = doc(db, "users", currentUserUid);
+  const userDocSnap = await getDoc(userDocRef);
+
+  if (!userDocSnap.exists()) {
+    alert("Profil introuvable.");
+    return;
+  }
+
+  // Déchiffrement
+  const data = userDocSnap.data();
+  currentUserData = {
+    prenom: await decryptData(data.prenom),
+    nom: await decryptData(data.nom),
+    age: await decryptData(data.age),
+    niveau: await decryptData(data.niveau),
+    photo: await decryptData(data.photo),
+    progression: data.progression || {}
+  };
+
+  // Affichage
+  prenomInput.value = currentUserData.prenom;
+  photoImg.src = currentUserData.photo;
+  nomSpan.textContent = currentUserData.nom;
+  ageSpan.textContent = currentUserData.age;
+  niveauSpan.textContent = currentUserData.niveau;
+
+  // Chargement séquences + progression
+  loadSequencesAndDisplayProgress();
+});
+
+// Fonction : Charger les séquences et afficher la progression
+async function loadSequencesAndDisplayProgress() {
   try {
-    return CryptoJS.AES.decrypt(data, secretKey).toString(CryptoJS.enc.Utf8);
-  } catch {
-    return "";
+    const response = await fetch('./data/sequences.json');
+    const json = await response.json();
+
+    // Fusionner toutes les séquences dans une seule liste
+    allSequences = Object.values(json).flatMap(niveau =>
+      niveau.flatMap(se => [se.titre, ...(se.lecons || []), se.evaluation])
+    );
+
+    // Afficher progression
+    progressionList.innerHTML = '';
+    allSequences.forEach(item => {
+      const li = document.createElement('li');
+      const status = currentUserData.progression[item] ? '✅' : '❌';
+      li.textContent = `${status} ${item}`;
+      progressionList.appendChild(li);
+    });
+  } catch (error) {
+    console.error('Erreur chargement des séquences :', error);
+    progressionList.innerHTML = '<li>Erreur de chargement</li>';
   }
 }
 
-// Chargement des séquences depuis JSON
-async function loadSequences() {
-  const response = await fetch('./data/sequences.json');
-  if (!response.ok) throw new Error("Erreur chargement des séquences.");
-  return await response.json();
-}
+// Changement de photo : compression + chiffrement immédiat
+photoUpload.addEventListener('change', async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
 
-// Affiche le profil utilisateur
-async function displayUserProfile(user) {
-  const messageDiv = document.getElementById('message');
-  const profileDiv = document.getElementById('profile');
-  const sequencesDiv = document.getElementById('sequences');
-  const prenomSpan = document.getElementById('prenom');
-  const photoImg = document.getElementById('photo');
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const img = new Image();
+    img.src = reader.result;
+
+    img.onload = async () => {
+      const canvas = document.createElement('canvas');
+      const maxSize = 150;
+      const scale = Math.min(maxSize / img.width, maxSize / img.height);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      const base64 = canvas.toDataURL('image/jpeg', 0.7);
+      photoImg.src = base64;
+
+      // Stocker l'image chiffrée en attente de sauvegarde
+      currentUserData.photo = await encryptData(base64);
+    };
+  };
+  reader.readAsDataURL(file);
+});
+
+// Enregistrement des modifications
+profileForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const newPrenom = prenomInput.value.trim();
+  if (newPrenom.length < 2) {
+    alert("Prénom trop court.");
+    return;
+  }
+
+  const prenomChiffre = await encryptData(newPrenom);
+  const photoChiffree = currentUserData.photo; // déjà chiffrée à l'upload
 
   try {
-    const userDoc = await getDoc(doc(db, "users", user.uid));
-    if (!userDoc.exists()) throw new Error("Profil introuvable.");
-
-    const userData = userDoc.data();
-    const decryptedPrenom = decrypt(userData.prenom);
-    const decryptedPhoto = userData.photo ? decrypt(userData.photo) : "https://via.placeholder.com/100";
-
-    // Affichage prénom et photo
-    prenomSpan.textContent = decryptedPrenom;
-    photoImg.src = decryptedPhoto;
-
-    // Chargement des séquences
-    const allSequences = await loadSequences();
-    const userSequences = userData.progression?.sequences || [];
-
-    // Création de la liste des séquences (faites ou non)
-    const list = document.createElement('ul');
-
-    allSequences[userData.niveau]?.forEach(seq => {
-      const li = document.createElement('li');
-      const match = userSequences.find(s => decrypt(s.title) === seq.title);
-      li.textContent = `${seq.title} ${match?.validated ? "✅" : "❌"}`;
-      list.appendChild(li);
+    await updateDoc(doc(db, "users", currentUserUid), {
+      prenom: prenomChiffre,
+      photo: photoChiffree
     });
 
-    sequencesDiv.appendChild(list);
-    profileDiv.style.display = 'block';
+    alert("Profil mis à jour !");
   } catch (error) {
-    console.error("Erreur profil :", error);
-    messageDiv.textContent = error.message;
+    console.error("Erreur update :", error);
+    alert("Erreur lors de la mise à jour.");
   }
-}
+});
 
 // Déconnexion
-document.getElementById('logout').addEventListener('click', async () => {
+logoutBtn.addEventListener('click', async () => {
   await signOut(auth);
   window.location.href = './login.html';
 });
 
-// Suppression de compte
-document.getElementById('delete-account').addEventListener('click', async () => {
+// Suppression de compte avec confirmation
+deleteAccountBtn.addEventListener('click', async () => {
   if (!confirm("Confirmer la suppression de votre compte ?")) return;
-  const user = auth.currentUser;
+
+  const email = auth.currentUser.email;
+  const password = prompt("Entrez votre mot de passe pour confirmer :");
+
+  if (!password) return;
+
   try {
-    await deleteDoc(doc(db, "users", user.uid));
-    await deleteUser(user);
+    const credential = EmailAuthProvider.credential(email, password);
+    await reauthenticateWithCredential(auth.currentUser, credential);
+    await deleteDoc(doc(db, "users", currentUserUid));
+    await deleteUser(auth.currentUser);
     alert("Compte supprimé.");
     window.location.href = './signup.html';
   } catch (error) {
     console.error("Erreur suppression :", error);
-    alert("Erreur lors de la suppression du compte.");
+    alert("Échec de la suppression. Mot de passe incorrect ou erreur.");
   }
 });
 
-// Bouton 2FA (non implémenté)
-document.getElementById('enable-2fa').addEventListener('click', () => {
+// Placeholder pour le bouton 2FA
+activate2FABtn.addEventListener('click', () => {
   alert("La 2FA sera bientôt disponible !");
-});
-
-// Auth listener
-onAuthStateChanged(auth, user => {
-  if (user) {
-    displayUserProfile(user);
-  } else {
-    window.location.href = './login.html';
-  }
 });
